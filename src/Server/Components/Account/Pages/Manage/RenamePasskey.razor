@@ -20,9 +20,9 @@
     }
     <hr />
     <ValidationSummary class="text-danger" role="alert" />
-    <div class="form-floating mb-3">
-        <InputText @bind-Value="Input.Name" id="Input.Name" class="form-control" aria-required="true" placeholder="My passkey" />
+    <div class="mb-3">
         <label for="Input.Name" class="form-label">Passkey name</label>
+        <InputText @bind-Value="Input.Name" id="Input.Name" class="form-control" aria-required="true" />
         <ValidationMessage For="() => Input.Name" class="text-danger" />
     </div>
     <div>

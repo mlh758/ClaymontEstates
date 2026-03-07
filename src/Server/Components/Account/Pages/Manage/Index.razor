@@ -18,31 +18,31 @@
         <EditForm Model="Input" FormName="profile" OnValidSubmit="OnValidSubmitAsync" method="post">
             <DataAnnotationsValidator />
             <ValidationSummary class="text-danger" role="alert" />
-            <div class="form-floating mb-3">
-                <InputText @bind-Value="Input.FullName" id="Input.FullName" class="form-control" placeholder="Your full name" />
+            <div class="mb-3">
                 <label for="Input.FullName" class="form-label">Full Name</label>
+                <InputText @bind-Value="Input.FullName" id="Input.FullName" class="form-control" />
                 <ValidationMessage For="() => Input.FullName" class="text-danger" />
             </div>
-            <div class="form-floating mb-3">
-                <input type="text" value="@username" id="username" class="form-control" placeholder="Choose your username." disabled />
+            <div class="mb-3">
                 <label for="username" class="form-label">Username</label>
+                <input type="text" value="@username" id="username" class="form-control" disabled />
             </div>
-            <div class="form-floating mb-3">
-                <InputText @bind-Value="Input.PhoneNumber" id="Input.PhoneNumber" class="form-control" placeholder="Enter your phone number" />
+            <div class="mb-3">
                 <label for="Input.PhoneNumber" class="form-label">Phone number</label>
+                <InputText @bind-Value="Input.PhoneNumber" id="Input.PhoneNumber" class="form-control" />
                 <ValidationMessage For="() => Input.PhoneNumber" class="text-danger" />
             </div>
-            <div class="form-floating mb-3">
+            <div class="mb-3">
+                <label for="@(isOfficer ? "Input.StreetAddress" : "streetAddress")" class="form-label">Street Address</label>
                 @if (isOfficer)
                 {
-                    <InputText @bind-Value="Input.StreetAddress" id="Input.StreetAddress" class="form-control" placeholder="Street address" />
+                    <InputText @bind-Value="Input.StreetAddress" id="Input.StreetAddress" class="form-control" />
                 }
                 else
                 {
                     <input type="text" value="@Input.StreetAddress" id="streetAddress" class="form-control" disabled />
                     <div class="form-text">Contact an officer to update your address.</div>
                 }
-                <label for="@(isOfficer ? "Input.StreetAddress" : "streetAddress")" class="form-label">Street Address</label>
             </div>
             <div class="form-check mb-3">
                 <InputCheckbox @bind-Value="Input.ShowContactInfo" id="Input.ShowContactInfo" class="form-check-input" />
