@@ -4,13 +4,22 @@ using System.Text.Json;
 
 namespace Server.Data;
 
+public enum AuditAction
+{
+    CreateUser,
+    EditUser,
+    SendPasswordReset,
+    UploadDocument,
+    DeleteDocument
+}
+
 public class AuditEvent
 {
     public int Id { get; set; }
 
     [Required]
     [MaxLength(100)]
-    public string Action { get; set; } = string.Empty;
+    public AuditAction Action { get; set; }
 
     [Required]
     [MaxLength(256)]

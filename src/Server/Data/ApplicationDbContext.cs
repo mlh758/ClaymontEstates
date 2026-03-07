@@ -30,6 +30,7 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
         builder.Entity<AuditEvent>(entity =>
         {
             entity.HasIndex(a => a.Timestamp);
+            entity.Property(a => a.Action).HasConversion<string>();
         });
     }
 }

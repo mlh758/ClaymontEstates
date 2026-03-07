@@ -1,4 +1,3 @@
-using System.Net.Mail;
 using System.Threading.RateLimiting;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Identity;
@@ -43,6 +42,7 @@ builder.Services.AddIdentityCore<ApplicationUser>(options =>
 
 builder.Services.AddScoped<UserService>();
 builder.Services.AddScoped<DocumentService>();
+builder.Services.AddScoped<AuditService>();
 
 builder.Services.AddAuthorizationBuilder()
     .AddPolicy(Roles.OfficerPolicy, policy =>
@@ -53,17 +53,20 @@ builder.Services.AddSingleton<IEmailSender<ApplicationUser>, IdentityNoOpEmailSe
 var emailConfig = builder.Configuration.GetSection("Email");
 builder.Services
     .AddFluentEmail(emailConfig["FromAddress"], emailConfig["FromName"])
-    .AddSmtpSender(new SmtpClient(emailConfig["SmtpHost"], int.Parse(emailConfig["SmtpPort"]!)));
+    .AddSmtpSender(emailConfig["SmtpHost"]!, int.Parse(emailConfig["SmtpPort"]!));
 
 builder.Services.AddRateLimiter(options =>
 {
     options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
-    options.AddFixedWindowLimiter("fixed", limiter =>
-    {
-        limiter.PermitLimit = 60;
-        limiter.Window = TimeSpan.FromMinutes(1);
-        limiter.QueueLimit = 0;
-    });
+    options.GlobalLimiter = PartitionedRateLimiter.Create<HttpContext, string>(context =>
+        RateLimitPartition.GetFixedWindowLimiter(
+            context.Connection.RemoteIpAddress?.ToString() ?? "unknown",
+            _ => new FixedWindowRateLimiterOptions
+            {
+                PermitLimit = 60,
+                Window = TimeSpan.FromMinutes(1),
+                QueueLimit = 0
+            }));
 });
 
 var app = builder.Build();

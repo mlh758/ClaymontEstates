@@ -6,6 +6,7 @@
 @attribute [Authorize(Policy = Roles.OfficerPolicy)]
 
 @inject UserService UserService
+@inject AuditService AuditService
 @inject NavigationManager Nav
 
 <PageTitle>Create User</PageTitle>
@@ -81,7 +82,7 @@ else
         {
             var actorEmail = HttpContext.User.FindFirstValue(ClaimTypes.Email) ?? "unknown";
             var ip = HttpContext.Connection.RemoteIpAddress?.ToString();
-            await UserService.LogAuditAsync("CreateUser", actorEmail, ip, new Dictionary<string, string>
+            await AuditService.LogAsync(AuditAction.CreateUser, actorEmail, ip, new Dictionary<string, string>
             {
                 ["TargetEmail"] = model.Email,
                 ["TargetName"] = model.FullName

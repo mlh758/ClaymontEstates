@@ -131,18 +131,6 @@ public class UserService(UserManager<ApplicationUser> userManager, RoleManager<I
             .SendAsync();
     }
 
-    public async Task LogAuditAsync(string action, string actorEmail, string? ipAddress, Dictionary<string, string>? details = null)
-    {
-        db.AuditEvents.Add(new AuditEvent
-        {
-            Action = action,
-            ActorEmail = actorEmail,
-            IpAddress = ipAddress,
-            Details = details ?? []
-        });
-        await db.SaveChangesAsync();
-    }
-
     public async Task EnsureRolesAsync()
     {
         foreach (var role in Roles.All)

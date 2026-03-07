@@ -6,6 +6,7 @@
 @attribute [Authorize(Policy = Roles.OfficerPolicy)]
 
 @inject UserService UserService
+@inject AuditService AuditService
 @inject AuthenticationStateProvider AuthStateProvider
 @inject NavigationManager Nav
 
@@ -161,7 +162,7 @@ else
 
         var actorEmail = HttpContext.User.FindFirstValue(ClaimTypes.Email) ?? "unknown";
         var ip = HttpContext.Connection.RemoteIpAddress?.ToString();
-        await UserService.LogAuditAsync("EditUser", actorEmail, ip, new Dictionary<string, string>
+        await AuditService.LogAsync(AuditAction.EditUser, actorEmail, ip, new Dictionary<string, string>
         {
             ["TargetEmail"] = model.Email,
             ["TargetName"] = model.FullName
@@ -180,7 +181,7 @@ else
 
         var actorEmail = HttpContext.User.FindFirstValue(ClaimTypes.Email) ?? "unknown";
         var ip = HttpContext.Connection.RemoteIpAddress?.ToString();
-        await UserService.LogAuditAsync("SendPasswordReset", actorEmail, ip, new Dictionary<string, string>
+        await AuditService.LogAsync(AuditAction.SendPasswordReset, actorEmail, ip, new Dictionary<string, string>
         {
             ["TargetEmail"] = user.Email ?? "",
             ["TargetName"] = user.FullName
