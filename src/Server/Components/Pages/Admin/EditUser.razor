@@ -79,18 +79,14 @@ else
     <hr />
 
     <h5>Password Reset</h5>
-    <form method="post" @formname="resetPassword" @onsubmit="GenerateResetLinkAsync">
+    <form method="post" @formname="resetPassword" @onsubmit="SendResetEmailAsync">
         <AntiforgeryToken />
-        <button type="submit" class="btn btn-warning">Generate Password Reset Link</button>
+        <button type="submit" class="btn btn-warning">Send Password Reset Email</button>
     </form>
 
-    @if (!string.IsNullOrEmpty(resetLink))
+    @if (resetEmailSent)
     {
-        <div class="alert alert-info mt-3">
-            <strong>Reset link:</strong>
-            <br />
-            <code class="user-select-all">@resetLink</code>
-        </div>
+        <div class="alert alert-success mt-3">Password reset email sent to @user.Email.</div>
     }
 }
 
@@ -102,12 +98,12 @@ else
 
     private ApplicationUser? user;
     [SupplyParameterFromForm]
-    private EditUserModel? model { get; set; }
+    private EditUserModel model { get; set; } = default!;
     private IList<string> currentRoles = [];
     private bool isPresident;
     private string? message;
     private bool isError;
-    private string? resetLink;
+    private bool resetEmailSent;
 
     protected override async Task OnInitializedAsync()
     {
@@ -134,7 +130,7 @@ else
 
     private async Task SaveAsync()
     {
-        if (user is null || model is null) return;
+        if (user is null) return;
 
         var (success, errors) = await UserService.UpdateUserAsync(
             user, model.FullName, model.Email, model.Phone, model.StreetAddress, model.ShowContactInfo);
@@ -175,20 +171,22 @@ else
         isError = false;
     }
 
-    private async Task GenerateResetLinkAsync()
+    private async Task SendResetEmailAsync()
     {
         if (user is null) return;
 
         var baseUrl = Nav.BaseUri.TrimEnd('/');
-        resetLink = await UserService.GeneratePasswordResetLinkAsync(user, baseUrl);
+        await UserService.SendPasswordResetEmailAsync(user, baseUrl);
 
         var actorEmail = HttpContext.User.FindFirstValue(ClaimTypes.Email) ?? "unknown";
         var ip = HttpContext.Connection.RemoteIpAddress?.ToString();
-        await UserService.LogAuditAsync("GeneratePasswordReset", actorEmail, ip, new Dictionary<string, string>
+        await UserService.LogAuditAsync("SendPasswordReset", actorEmail, ip, new Dictionary<string, string>
         {
             ["TargetEmail"] = user.Email ?? "",
             ["TargetName"] = user.FullName
         });
+
+        resetEmailSent = true;
     }
 
     private sealed class EditUserModel

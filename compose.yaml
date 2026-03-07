@@ -1,0 +1,7 @@
+services:
+  papercut:
+    image: changemakerstudiosus/papercut-smtp:latest
+    ports:
+      - "37408:8080"  # Web UI
+      - "2525:2525"   # SMTP
+    restart: unless-stopped

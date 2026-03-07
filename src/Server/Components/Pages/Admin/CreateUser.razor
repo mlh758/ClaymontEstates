@@ -12,11 +12,10 @@
 
 <h1>Create User</h1>
 
-@if (!string.IsNullOrEmpty(inviteLink))
+@if (created)
 {
     <div class="alert alert-success">
-        <p>User created. Send them this link to set their password:</p>
-        <code>@inviteLink</code>
+        <p>User created. An email has been sent with instructions to set their password.</p>
     </div>
     <a href="/admin/users" class="btn btn-secondary mt-2">Back to Users</a>
 }
@@ -56,7 +55,7 @@ else
             <InputText class="form-control" @bind-Value="model.StreetAddress" />
         </div>
 
-        <button type="submit" class="btn btn-primary">Create & Generate Invite Link</button>
+        <button type="submit" class="btn btn-primary">Create & Send Invite</button>
         <a href="/admin/users" class="btn btn-secondary ms-2">Cancel</a>
     </EditForm>
 }
@@ -68,14 +67,14 @@ else
     [SupplyParameterFromForm]
     private CreateUserModel? model { get; set; }
     private string[] errors = [];
-    private string? inviteLink;
+    private bool created;
 
     protected override void OnInitialized() => model ??= new();
 
     private async Task CreateAsync()
     {
         var baseUrl = Nav.BaseUri.TrimEnd('/');
-        var (success, errs, link) = await UserService.CreateUserAsync(
+        var (success, errs) = await UserService.CreateUserAsync(
             model.FullName, model.Email, model.Phone, model.StreetAddress, baseUrl);
 
         if (success)
@@ -87,7 +86,7 @@ else
                 ["TargetEmail"] = model.Email,
                 ["TargetName"] = model.FullName
             });
-            inviteLink = link;
+            created = true;
         }
         else
         {

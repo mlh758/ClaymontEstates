@@ -1,3 +1,4 @@
+using System.Net.Mail;
 using System.Threading.RateLimiting;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Identity;
@@ -48,6 +49,11 @@ builder.Services.AddAuthorizationBuilder()
         policy.RequireRole(Roles.OfficerRoles));
 
 builder.Services.AddSingleton<IEmailSender<ApplicationUser>, IdentityNoOpEmailSender>();
+
+var emailConfig = builder.Configuration.GetSection("Email");
+builder.Services
+    .AddFluentEmail(emailConfig["FromAddress"], emailConfig["FromName"])
+    .AddSmtpSender(new SmtpClient(emailConfig["SmtpHost"], int.Parse(emailConfig["SmtpPort"]!)));
 
 builder.Services.AddRateLimiter(options =>
 {

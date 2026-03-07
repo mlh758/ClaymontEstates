@@ -1,4 +1,5 @@
 using System.Text;
+using FluentEmail.Core;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.EntityFrameworkCore;
@@ -6,7 +7,7 @@ using Server.Data;
 
 namespace Server.Services;
 
-public class UserService(UserManager<ApplicationUser> userManager, RoleManager<IdentityRole> roleManager, ApplicationDbContext db)
+public class UserService(UserManager<ApplicationUser> userManager, RoleManager<IdentityRole> roleManager, ApplicationDbContext db, IFluentEmail email)
 {
     private IQueryable<ApplicationUser> UsersWithRoles => db.Users
         .Include(u => u.UserRoles).ThenInclude(ur => ur.Role);
@@ -42,13 +43,13 @@ public class UserService(UserManager<ApplicationUser> userManager, RoleManager<I
         return await userManager.FindByIdAsync(id);
     }
 
-    public async Task<(bool Success, string[] Errors, string? InviteLink)> CreateUserAsync(
-        string fullName, string email, string phone, string streetAddress, string baseUrl)
+    public async Task<(bool Success, string[] Errors)> CreateUserAsync(
+        string fullName, string emailAddress, string phone, string streetAddress, string baseUrl)
     {
         var user = new ApplicationUser
         {
-            UserName = email,
-            Email = email,
+            UserName = emailAddress,
+            Email = emailAddress,
             FullName = fullName,
             PhoneNumber = phone,
             StreetAddress = streetAddress,
@@ -57,12 +58,12 @@ public class UserService(UserManager<ApplicationUser> userManager, RoleManager<I
 
         var result = await userManager.CreateAsync(user);
         if (!result.Succeeded)
-            return (false, result.Errors.Select(e => e.Description).ToArray(), null);
+            return (false, result.Errors.Select(e => e.Description).ToArray());
 
         await userManager.AddToRoleAsync(user, Roles.Resident);
+        await SendPasswordResetEmailAsync(user, baseUrl, isNewAccount: true);
 
-        var inviteLink = await GeneratePasswordResetLinkAsync(user, baseUrl);
-        return (true, [], inviteLink);
+        return (true, []);
     }
 
     public async Task<(bool Success, string[] Errors)> UpdateUserAsync(
@@ -95,12 +96,39 @@ public class UserService(UserManager<ApplicationUser> userManager, RoleManager<I
         return (addResult.Succeeded, addResult.Errors.Select(e => e.Description).ToArray());
     }
 
-    public async Task<string> GeneratePasswordResetLinkAsync(ApplicationUser user, string baseUrl)
+    public async Task SendPasswordResetEmailAsync(ApplicationUser user, string baseUrl, bool isNewAccount = false)
     {
         var token = await userManager.GeneratePasswordResetTokenAsync(user);
         var encodedToken = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(token));
         var encodedEmail = Uri.EscapeDataString(user.Email!);
-        return $"{baseUrl}/Account/ResetPassword?code={encodedToken}&email={encodedEmail}";
+        var resetLink = $"{baseUrl}/Account/ResetPassword?code={encodedToken}&email={encodedEmail}";
+
+        var subject = isNewAccount
+            ? "Welcome to Claymont Estates HOA"
+            : "Password Reset - Claymont Estates HOA";
+
+        var body = isNewAccount
+            ? $"""
+              <h2>Welcome to Claymont Estates HOA, {user.FullName}!</h2>
+              <p>An account has been created for you on the Claymont Estates community portal.</p>
+              <p>Please click the link below to set your password and get started:</p>
+              <p><a href="{resetLink}">Set Your Password</a></p>
+              <p>If you did not expect this email, you can safely ignore it.</p>
+              """
+            : $"""
+              <h2>Password Reset</h2>
+              <p>Hi {user.FullName},</p>
+              <p>A password reset was requested for your Claymont Estates HOA account.</p>
+              <p>Please click the link below to reset your password:</p>
+              <p><a href="{resetLink}">Reset Your Password</a></p>
+              <p>If you did not request this, you can safely ignore it.</p>
+              """;
+
+        await email
+            .To(user.Email!)
+            .Subject(subject)
+            .Body(body, isHtml: true)
+            .SendAsync();
     }
 
     public async Task LogAuditAsync(string action, string actorEmail, string? ipAddress, Dictionary<string, string>? details = null)
