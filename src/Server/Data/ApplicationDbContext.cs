@@ -11,6 +11,8 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
 {
     public DbSet<AuditEvent> AuditEvents => Set<AuditEvent>();
     public DbSet<Document> Documents => Set<Document>();
+    public DbSet<Event> Events => Set<Event>();
+    public DbSet<Rsvp> Rsvps => Set<Rsvp>();
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
@@ -31,6 +33,21 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
         {
             entity.HasIndex(a => a.Timestamp);
             entity.Property(a => a.Action).HasConversion<string>();
+        });
+
+        builder.Entity<Rsvp>(entity =>
+        {
+            entity.HasIndex(r => new { r.EventId, r.UserId }).IsUnique();
+
+            entity.HasOne(r => r.Event)
+                .WithMany(e => e.Rsvps)
+                .HasForeignKey(r => r.EventId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne(r => r.User)
+                .WithMany()
+                .HasForeignKey(r => r.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
         });
     }
 }

@@ -1,0 +1,36 @@
+@using Server.Data
+
+<div class="card mb-3">
+    <div class="card-body">
+        <h5 class="card-title">@Event.Name</h5>
+        <div class="text-muted mb-2">
+            <span>@Event.Date.ToLocalTime().ToString("dddd, MMMM d, yyyy")</span>
+            <span class="mx-1">&middot;</span>
+            <span>@Event.Date.ToLocalTime().ToString("h:mm tt") &ndash; @Event.Date.Add(Event.Duration).ToLocalTime().ToString("h:mm tt")</span>
+        </div>
+        @if (!string.IsNullOrWhiteSpace(Event.Location))
+        {
+            <div class="text-muted mb-2">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" class="bi bi-geo-alt-fill" viewBox="0 0 16 16" style="vertical-align: -1px;">
+                    <path d="M8 16s6-5.686 6-10A6 6 0 0 0 2 6c0 4.314 6 10 6 10zm0-7a3 3 0 1 1 0-6 3 3 0 0 1 0 6z"/>
+                </svg>
+                <span class="ms-1">@Event.Location</span>
+            </div>
+        }
+        <div class="card-text">@((MarkupString)Event.Description)</div>
+        @if (ChildContent is not null)
+        {
+            <div class="mt-2">
+                @ChildContent
+            </div>
+        }
+    </div>
+</div>
+
+@code {
+    [Parameter, EditorRequired]
+    public Event Event { get; set; } = default!;
+
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+}

@@ -10,7 +10,10 @@ public enum AuditAction
     EditUser,
     SendPasswordReset,
     UploadDocument,
-    DeleteDocument
+    DeleteDocument,
+    CreateEvent,
+    EditEvent,
+    DeleteEvent
 }
 
 public class AuditEvent

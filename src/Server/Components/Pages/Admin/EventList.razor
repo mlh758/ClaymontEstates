@@ -1,0 +1,67 @@
+@page "/admin/events"
+@using Microsoft.AspNetCore.Authorization
+@using Server.Data
+@using Server.Services
+@attribute [Authorize(Policy = Roles.OfficerPolicy)]
+
+@inject EventService EventService
+
+<PageTitle>Manage Events</PageTitle>
+
+<h1>Manage Events</h1>
+
+<a href="/admin/events/create" class="btn btn-primary mb-3">Create Event</a>
+
+@if (events is null)
+{
+    <p><em>Loading...</em></p>
+}
+else if (events.Count == 0)
+{
+    <p>No events in the last 30 days or next 90 days.</p>
+}
+else
+{
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Date</th>
+                <th>Duration</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var evt in events)
+            {
+                var isPast = evt.Date.Add(evt.Duration) < DateTime.UtcNow;
+                <tr class="@(isPast ? "text-muted" : "")">
+                    <td>@evt.Name</td>
+                    <td>@evt.Date.ToLocalTime().ToString("MMM d, yyyy h:mm tt")</td>
+                    <td>@FormatDuration(evt.Duration)</td>
+                    <td>
+                        <a href="/admin/events/edit/@evt.Id" class="btn btn-sm btn-outline-secondary">Edit</a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    private List<Event>? events;
+
+    protected override async Task OnInitializedAsync()
+    {
+        events = await EventService.GetRecentAndUpcomingAsync();
+    }
+
+    private static string FormatDuration(TimeSpan duration)
+    {
+        if (duration.TotalMinutes < 60)
+            return $"{(int)duration.TotalMinutes}m";
+        if (duration.Minutes == 0)
+            return $"{(int)duration.TotalHours}h";
+        return $"{(int)duration.TotalHours}h {duration.Minutes}m";
+    }
+}

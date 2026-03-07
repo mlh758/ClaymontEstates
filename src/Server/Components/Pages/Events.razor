@@ -1,0 +1,116 @@
+@page "/events"
+@using System.Security.Claims
+@using Microsoft.AspNetCore.Authorization
+@using Server.Data
+@using Server.Services
+@using Server.Components.Shared
+@attribute [Authorize]
+@rendermode InteractiveServer
+
+@inject EventService EventService
+@inject AuthenticationStateProvider AuthStateProvider
+
+<PageTitle>Events</PageTitle>
+
+<h1>Events</h1>
+
+<div class="d-flex align-items-center mb-3">
+    <button class="btn btn-outline-secondary btn-sm" @onclick="PreviousMonth">&laquo; Previous</button>
+    <h5 class="mx-3 mb-0">@currentMonth.ToString("MMMM yyyy")</h5>
+    <button class="btn btn-outline-secondary btn-sm" @onclick="NextMonth">Next &raquo;</button>
+</div>
+
+@if (events is null)
+{
+    <p><em>Loading...</em></p>
+}
+else if (events.Count == 0)
+{
+    <p>No events this month.</p>
+}
+else
+{
+    @foreach (var summary in events)
+    {
+        <EventCard Event="summary.Event">
+            @if (summary.Event.RequiresRsvp)
+            {
+                var attending = userRsvpEventIds.Contains(summary.Event.Id);
+                <div class="d-flex align-items-center gap-2">
+                    <span class="text-muted">@summary.RsvpCount attending</span>
+                    @if (attending)
+                    {
+                        <span class="badge bg-success">You're going</span>
+                        <button class="btn btn-sm btn-outline-danger" @onclick="() => CancelRsvpAsync(summary)">Cancel</button>
+                    }
+                    else
+                    {
+                        <button class="btn btn-sm btn-primary" @onclick="() => RsvpAsync(summary)">RSVP</button>
+                    }
+                </div>
+            }
+        </EventCard>
+    }
+}
+
+@code {
+    private DateTime currentMonth;
+    private List<EventSummary>? events;
+    private HashSet<int> userRsvpEventIds = [];
+    private string? currentUserId;
+
+    protected override async Task OnInitializedAsync()
+    {
+        currentMonth = new DateTime(DateTime.Today.Year, DateTime.Today.Month, 1);
+
+        var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+        currentUserId = authState.User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+        await LoadEventsAsync();
+    }
+
+    private async Task LoadEventsAsync()
+    {
+        var from = currentMonth;
+        var to = currentMonth.AddMonths(1);
+
+        events = await EventService.GetEventsForMonthAsync(currentMonth);
+
+        if (currentUserId is not null)
+            userRsvpEventIds = await EventService.GetUserRsvpEventIdsAsync(currentUserId, from, to);
+    }
+
+    private async Task PreviousMonth()
+    {
+        currentMonth = currentMonth.AddMonths(-1);
+        await LoadEventsAsync();
+    }
+
+    private async Task NextMonth()
+    {
+        currentMonth = currentMonth.AddMonths(1);
+        await LoadEventsAsync();
+    }
+
+    private async Task RsvpAsync(EventSummary summary)
+    {
+        if (currentUserId is null) return;
+        var (success, _) = await EventService.RsvpAsync(summary.Event.Id, currentUserId);
+        if (success)
+        {
+            userRsvpEventIds.Add(summary.Event.Id);
+            summary.RsvpCount++;
+        }
+    }
+
+    private async Task CancelRsvpAsync(EventSummary summary)
+    {
+        if (currentUserId is null) return;
+        var (success, _) = await EventService.CancelRsvpAsync(summary.Event.Id, currentUserId);
+        if (success)
+        {
+            userRsvpEventIds.Remove(summary.Event.Id);
+            summary.RsvpCount--;
+        }
+    }
+}

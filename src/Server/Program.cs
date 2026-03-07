@@ -42,7 +42,9 @@ builder.Services.AddIdentityCore<ApplicationUser>(options =>
 
 builder.Services.AddScoped<UserService>();
 builder.Services.AddScoped<DocumentService>();
+builder.Services.AddScoped<EventService>();
 builder.Services.AddScoped<AuditService>();
+builder.Services.AddSingleton<HtmlSanitizationService>();
 
 builder.Services.AddAuthorizationBuilder()
     .AddPolicy(Roles.OfficerPolicy, policy =>
