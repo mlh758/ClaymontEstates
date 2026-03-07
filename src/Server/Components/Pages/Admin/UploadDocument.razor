@@ -1,0 +1,126 @@
+@page "/admin/documents/upload"
+@using System.Security.Claims
+@using Microsoft.AspNetCore.Authorization
+@using Server.Data
+@using Server.Services
+@attribute [Authorize(Policy = Roles.OfficerPolicy)]
+@rendermode InteractiveServer
+
+@inject DocumentService DocumentService
+@inject UserService UserService
+@inject AuthenticationStateProvider AuthStateProvider
+@inject NavigationManager Nav
+
+<PageTitle>Upload Document</PageTitle>
+
+<h1>Upload Document</h1>
+
+@if (!string.IsNullOrEmpty(message))
+{
+    <div class="alert @(isError ? "alert-danger" : "alert-success")">@message</div>
+}
+
+@if (uploaded)
+{
+    <a href="/documents" class="btn btn-secondary">Back to Documents</a>
+}
+else
+{
+    <EditForm Model="model" OnValidSubmit="UploadAsync">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+
+        <div class="mb-3">
+            <label class="form-label">Name</label>
+            <InputText class="form-control" @bind-Value="model.Name" />
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Description (optional)</label>
+            <InputTextArea class="form-control" @bind-Value="model.Description" />
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Effective Date</label>
+            <InputDate class="form-control" @bind-Value="model.EffectiveDate" />
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">File (max 50 MB)</label>
+            <InputFile OnChange="OnFileSelected" class="form-control" />
+        </div>
+
+        @if (selectedFile is not null)
+        {
+            <p class="text-muted">Selected: @selectedFile.Name (@FormatSize(selectedFile.Size))</p>
+        }
+
+        <button type="submit" class="btn btn-primary" disabled="@(selectedFile is null || uploading)">
+            @(uploading ? "Uploading..." : "Upload")
+        </button>
+        <a href="/documents" class="btn btn-secondary ms-2">Cancel</a>
+    </EditForm>
+}
+
+@code {
+    private UploadModel model = new() { EffectiveDate = DateTime.Today };
+    private IBrowserFile? selectedFile;
+    private string? message;
+    private bool isError;
+    private bool uploaded;
+    private bool uploading;
+
+    private void OnFileSelected(InputFileChangeEventArgs e)
+    {
+        selectedFile = e.File;
+    }
+
+    private async Task UploadAsync()
+    {
+        if (selectedFile is null) return;
+
+        uploading = true;
+
+        var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+        var actorEmail = authState.User.FindFirstValue(ClaimTypes.Email) ?? "unknown";
+
+        await using var stream = selectedFile.OpenReadStream(maxAllowedSize: 50 * 1024 * 1024);
+        var (success, error, doc) = await DocumentService.UploadAsync(
+            model.Name, model.Description, model.EffectiveDate, actorEmail,
+            stream, selectedFile.Name, selectedFile.ContentType, selectedFile.Size);
+
+        if (success)
+        {
+            await UserService.LogAuditAsync("UploadDocument", actorEmail, null, new Dictionary<string, string>
+            {
+                ["DocumentName"] = model.Name,
+                ["FileName"] = selectedFile.Name
+            });
+            message = $"Document '{model.Name}' uploaded successfully.";
+            isError = false;
+            uploaded = true;
+        }
+        else
+        {
+            message = error;
+            isError = true;
+        }
+
+        uploading = false;
+    }
+
+    private static string FormatSize(long bytes)
+    {
+        if (bytes < 1024) return $"{bytes} B";
+        if (bytes < 1024 * 1024) return $"{bytes / 1024.0:F1} KB";
+        return $"{bytes / (1024.0 * 1024.0):F1} MB";
+    }
+
+    private sealed class UploadModel
+    {
+        [System.ComponentModel.DataAnnotations.Required]
+        public string Name { get; set; } = "";
+        public string? Description { get; set; }
+        public DateTime EffectiveDate { get; set; }
+    }
+}

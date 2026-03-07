@@ -1,0 +1,179 @@
+@page "/admin/users/edit/{UserId}"
+@using Microsoft.AspNetCore.Authorization
+@using System.Security.Claims
+@using Server.Data
+@using Server.Services
+@attribute [Authorize(Policy = Roles.OfficerPolicy)]
+
+@inject UserService UserService
+@inject AuthenticationStateProvider AuthStateProvider
+@inject NavigationManager Nav
+
+<PageTitle>Edit User</PageTitle>
+
+<h1>Edit User</h1>
+
+@if (user is null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    @if (!string.IsNullOrEmpty(message))
+    {
+        <div class="alert @(isError ? "alert-danger" : "alert-success")">@message</div>
+    }
+
+    <EditForm Model="model" OnValidSubmit="SaveAsync" FormName="editUser">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+
+        <div class="mb-3">
+            <label class="form-label">Full Name</label>
+            <InputText class="form-control" @bind-Value="model.FullName" />
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Email</label>
+            <InputText class="form-control" @bind-Value="model.Email" />
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Phone</label>
+            <InputText class="form-control" @bind-Value="model.Phone" />
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Street Address</label>
+            <InputText class="form-control" @bind-Value="model.StreetAddress" />
+        </div>
+
+        <div class="mb-3 form-check">
+            <InputCheckbox class="form-check-input" @bind-Value="model.ShowContactInfo" />
+            <label class="form-check-label">Show email and phone in directory</label>
+        </div>
+
+        @if (isPresident)
+        {
+            <div class="mb-3">
+                <label class="form-label">Roles</label>
+                <div class="form-check">
+                    <InputCheckbox class="form-check-input" @bind-Value="model.IsPresident" />
+                    <label class="form-check-label">President</label>
+                </div>
+                <div class="form-check">
+                    <InputCheckbox class="form-check-input" @bind-Value="model.IsTreasurer" />
+                    <label class="form-check-label">Treasurer</label>
+                </div>
+                <div class="form-check">
+                    <InputCheckbox class="form-check-input" @bind-Value="model.IsSecretary" />
+                    <label class="form-check-label">Secretary</label>
+                </div>
+            </div>
+        }
+
+        <button type="submit" class="btn btn-primary">Save</button>
+        <a href="/admin/users" class="btn btn-secondary ms-2">Back</a>
+    </EditForm>
+}
+
+@code {
+    [CascadingParameter]
+    private HttpContext HttpContext { get; set; } = default!;
+
+    [Parameter] public string UserId { get; set; } = "";
+
+    private ApplicationUser? user;
+    [SupplyParameterFromForm]
+    private EditUserModel? model { get; set; }
+    private IList<string> currentRoles = [];
+    private bool isPresident;
+    private string? message;
+    private bool isError;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+        isPresident = authState.User.IsInRole(Roles.President);
+
+        user = await UserService.GetUserByIdAsync(UserId);
+        if (user is null) return;
+
+        currentRoles = await UserService.GetUserRolesAsync(user);
+
+        model ??= new EditUserModel
+        {
+            FullName = user.FullName,
+            Email = user.Email ?? "",
+            Phone = user.PhoneNumber ?? "",
+            StreetAddress = user.StreetAddress,
+            ShowContactInfo = user.ShowContactInfo,
+            IsPresident = currentRoles.Contains(Roles.President),
+            IsTreasurer = currentRoles.Contains(Roles.Treasurer),
+            IsSecretary = currentRoles.Contains(Roles.Secretary)
+        };
+    }
+
+    private async Task SaveAsync()
+    {
+        if (user is null || model is null) return;
+
+        var (success, errors) = await UserService.UpdateUserAsync(
+            user, model.FullName, model.Email, model.Phone, model.StreetAddress, model.ShowContactInfo);
+
+        if (!success)
+        {
+            message = string.Join(", ", errors);
+            isError = true;
+            return;
+        }
+
+        if (isPresident)
+        {
+            var newRoles = new List<string> { Roles.Resident };
+            if (model.IsPresident) newRoles.Add(Roles.President);
+            if (model.IsTreasurer) newRoles.Add(Roles.Treasurer);
+            if (model.IsSecretary) newRoles.Add(Roles.Secretary);
+
+            var (roleSuccess, roleErrors) = await UserService.SetUserRolesAsync(user, newRoles);
+            if (!roleSuccess)
+            {
+                message = string.Join(", ", roleErrors);
+                isError = true;
+                return;
+            }
+            currentRoles = newRoles;
+        }
+
+        var actorEmail = HttpContext.User.FindFirstValue(ClaimTypes.Email) ?? "unknown";
+        var ip = HttpContext.Connection.RemoteIpAddress?.ToString();
+        await UserService.LogAuditAsync("EditUser", actorEmail, ip, new Dictionary<string, string>
+        {
+            ["TargetEmail"] = model.Email,
+            ["TargetName"] = model.FullName
+        });
+
+        message = "User updated.";
+        isError = false;
+    }
+
+    private sealed class EditUserModel
+    {
+        [System.ComponentModel.DataAnnotations.Required]
+        public string FullName { get; set; } = "";
+
+        [System.ComponentModel.DataAnnotations.Required]
+        [System.ComponentModel.DataAnnotations.EmailAddress]
+        public string Email { get; set; } = "";
+
+        public string Phone { get; set; } = "";
+
+        [System.ComponentModel.DataAnnotations.Required]
+        public string StreetAddress { get; set; } = "";
+
+        public bool ShowContactInfo { get; set; } = true;
+        public bool IsPresident { get; set; }
+        public bool IsTreasurer { get; set; }
+        public bool IsSecretary { get; set; }
+    }
+}

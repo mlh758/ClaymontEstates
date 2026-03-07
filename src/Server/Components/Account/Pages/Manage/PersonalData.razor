@@ -1,0 +1,43 @@
+﻿@page "/Account/Manage/PersonalData"
+
+@using Microsoft.AspNetCore.Identity
+@using Server.Data
+
+@inject UserManager<ApplicationUser> UserManager
+@inject IdentityRedirectManager RedirectManager
+
+<PageTitle>Personal Data</PageTitle>
+
+<StatusMessage />
+<h3>Personal Data</h3>
+
+<div class="row">
+    <div class="col-md-6">
+        <p>Your personal data is kept private and is only visible to other members of the Claymont Estates HOA. You can download or delete your data at any time.</p>
+        <p>If you delete your account, an HOA officer can add you back later at your request. Just keep in mind it may take a little longer to get news about the HOA in the meantime.</p>
+        <p>
+            <strong>Deleting your account is permanent and cannot be undone.</strong>
+        </p>
+        <form action="Account/Manage/DownloadPersonalData" method="post">
+            <AntiforgeryToken />
+            <button class="btn btn-primary" type="submit">Download</button>
+        </form>
+        <div class="mt-3">
+            <a href="Account/Manage/DeletePersonalData" class="btn btn-danger">Delete</a>
+        </div>
+    </div>
+</div>
+
+@code {
+    [CascadingParameter]
+    private HttpContext HttpContext { get; set; } = default!;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var user  = await UserManager.GetUserAsync(HttpContext.User);
+        if (user is null)
+        {
+            RedirectManager.RedirectToInvalidUser(UserManager, HttpContext);
+        }
+    }
+}
