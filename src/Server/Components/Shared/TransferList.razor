@@ -1,0 +1,135 @@
+@typeparam TItem
+
+<div class="row">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <strong>@AvailableLabel</strong>
+                <span class="badge bg-secondary">@FilteredAvailable.Count</span>
+            </div>
+            <div class="card-body p-2">
+                <input type="text" class="form-control form-control-sm mb-2"
+                       placeholder="Filter..."
+                       @bind="availableFilter" @bind:event="oninput" />
+                <div style="max-height: 400px; overflow-y: auto;">
+                    @if (FilteredAvailable.Count == 0)
+                    {
+                        <p class="text-muted text-center small py-3 mb-0">
+                            @(string.IsNullOrEmpty(availableFilter) ? AvailableEmptyText : "No matches.")
+                        </p>
+                    }
+                    else
+                    {
+                        <div class="list-group list-group-flush">
+                            @foreach (var item in FilteredAvailable)
+                            {
+                                var current = item;
+                                <button type="button"
+                                        class="list-group-item list-group-item-action d-flex justify-content-between align-items-center py-2"
+                                        @onclick="() => OnAdd.InvokeAsync(current)">
+                                    <div>
+                                        <div>@ItemTitle(current)</div>
+                                        @{ var subtitle = ItemSubtitle?.Invoke(current); }
+                                        @if (!string.IsNullOrEmpty(subtitle))
+                                        {
+                                            <small class="text-muted">@subtitle</small>
+                                        }
+                                    </div>
+                                    <span class="text-success">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                                            <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4z"/>
+                                        </svg>
+                                    </span>
+                                </button>
+                            }
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6">
+        <div class="card border-success">
+            <div class="card-header d-flex justify-content-between align-items-center bg-success bg-opacity-10">
+                <strong>@SelectedLabel</strong>
+                <span class="badge bg-success">@FilteredSelected.Count</span>
+            </div>
+            <div class="card-body p-2">
+                <input type="text" class="form-control form-control-sm mb-2"
+                       placeholder="Filter..."
+                       @bind="selectedFilter" @bind:event="oninput" />
+                <div style="max-height: 400px; overflow-y: auto;">
+                    @if (FilteredSelected.Count == 0)
+                    {
+                        <p class="text-muted text-center small py-3 mb-0">
+                            @(string.IsNullOrEmpty(selectedFilter) ? SelectedEmptyText : "No matches.")
+                        </p>
+                    }
+                    else
+                    {
+                        <div class="list-group list-group-flush">
+                            @foreach (var item in FilteredSelected)
+                            {
+                                var current = item;
+                                <button type="button"
+                                        class="list-group-item list-group-item-action d-flex justify-content-between align-items-center py-2"
+                                        @onclick="() => OnRemove.InvokeAsync(current)">
+                                    <div>
+                                        <div>@ItemTitle(current)</div>
+                                        @{ var subtitle2 = ItemSubtitle?.Invoke(current); }
+                                        @if (!string.IsNullOrEmpty(subtitle2))
+                                        {
+                                            <small class="text-muted">@subtitle2</small>
+                                        }
+                                    </div>
+                                    <span class="text-danger">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                                            <path d="M4 8a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7A.5.5 0 0 1 4 8z"/>
+                                        </svg>
+                                    </span>
+                                </button>
+                            }
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter, EditorRequired] public List<TItem> Items { get; set; } = [];
+    [Parameter, EditorRequired] public Func<TItem, string> ItemId { get; set; } = default!;
+    [Parameter, EditorRequired] public Func<TItem, string> ItemTitle { get; set; } = default!;
+    [Parameter] public Func<TItem, string?>? ItemSubtitle { get; set; }
+    [Parameter, EditorRequired] public HashSet<string> SelectedIds { get; set; } = [];
+    [Parameter] public EventCallback<TItem> OnAdd { get; set; }
+    [Parameter] public EventCallback<TItem> OnRemove { get; set; }
+
+    [Parameter] public string AvailableLabel { get; set; } = "Available";
+    [Parameter] public string SelectedLabel { get; set; } = "Selected";
+    [Parameter] public string AvailableEmptyText { get; set; } = "None available.";
+    [Parameter] public string SelectedEmptyText { get; set; } = "None selected.";
+
+    private string? availableFilter;
+    private string? selectedFilter;
+
+    private List<TItem> FilteredAvailable => Items
+        .Where(i => !SelectedIds.Contains(ItemId(i)))
+        .Where(i => MatchesFilter(i, availableFilter))
+        .ToList();
+
+    private List<TItem> FilteredSelected => Items
+        .Where(i => SelectedIds.Contains(ItemId(i)))
+        .Where(i => MatchesFilter(i, selectedFilter))
+        .ToList();
+
+    private bool MatchesFilter(TItem item, string? filter)
+    {
+        if (string.IsNullOrWhiteSpace(filter)) return true;
+        var lower = filter.ToLower();
+        return ItemTitle(item).ToLower().Contains(lower)
+            || (ItemSubtitle?.Invoke(item)?.ToLower().Contains(lower) ?? false);
+    }
+}
