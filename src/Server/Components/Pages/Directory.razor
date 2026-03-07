@@ -4,6 +4,7 @@
 @using Server.Services
 @attribute [Authorize]
 @rendermode InteractiveServer
+@implements IDisposable
 
 @inject UserService UserService
 @inject AuthenticationStateProvider AuthStateProvider
@@ -14,7 +15,7 @@
 
 <div class="mb-3">
     <input type="text" class="form-control" placeholder="Search by name or address..."
-           @bind="searchQuery" @bind:event="oninput" @bind:after="SearchAsync" />
+           @bind="searchQuery" @bind:event="oninput" @bind:after="OnSearchInput" />
 </div>
 
 @if (residents is null)
@@ -57,6 +58,7 @@ else
     private List<(ApplicationUser User, string? Role)>? residents;
     private string? searchQuery;
     private bool isOfficerOrAbove;
+    private Timer? debounceTimer;
 
     protected override async Task OnInitializedAsync()
     {
@@ -67,8 +69,21 @@ else
         residents = await UserService.SearchUsersWithRolesAsync(null);
     }
 
-    private async Task SearchAsync()
+    private void OnSearchInput()
     {
-        residents = await UserService.SearchUsersWithRolesAsync(searchQuery);
+        debounceTimer?.Dispose();
+        debounceTimer = new Timer(async _ =>
+        {
+            await InvokeAsync(async () =>
+            {
+                residents = await UserService.SearchUsersWithRolesAsync(searchQuery);
+                StateHasChanged();
+            });
+        }, null, 300, Timeout.Infinite);
+    }
+
+    public void Dispose()
+    {
+        debounceTimer?.Dispose();
     }
 }
