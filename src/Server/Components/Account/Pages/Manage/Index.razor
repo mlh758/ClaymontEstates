@@ -20,7 +20,7 @@
             <ValidationSummary class="text-danger" role="alert" />
             <div class="mb-3">
                 <label for="Input.FullName" class="form-label">Full Name</label>
-                <InputText @bind-Value="Input.FullName" id="Input.FullName" class="form-control" />
+                <InputText @bind-Value="Input.FullName" id="Input.FullName" class="form-control" autocomplete="name" />
                 <ValidationMessage For="() => Input.FullName" class="text-danger" />
             </div>
             <div class="mb-3">
@@ -29,14 +29,14 @@
             </div>
             <div class="mb-3">
                 <label for="Input.PhoneNumber" class="form-label">Phone number</label>
-                <InputText @bind-Value="Input.PhoneNumber" id="Input.PhoneNumber" class="form-control" />
+                <InputText type="tel" @bind-Value="Input.PhoneNumber" id="Input.PhoneNumber" class="form-control" autocomplete="tel" />
                 <ValidationMessage For="() => Input.PhoneNumber" class="text-danger" />
             </div>
             <div class="mb-3">
                 <label for="@(isOfficer ? "Input.StreetAddress" : "streetAddress")" class="form-label">Street Address</label>
                 @if (isOfficer)
                 {
-                    <InputText @bind-Value="Input.StreetAddress" id="Input.StreetAddress" class="form-control" />
+                    <InputText @bind-Value="Input.StreetAddress" id="Input.StreetAddress" class="form-control" autocomplete="street-address" />
                 }
                 else
                 {

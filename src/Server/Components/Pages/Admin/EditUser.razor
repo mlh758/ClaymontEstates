@@ -12,83 +12,92 @@
 
 <PageTitle>Edit User</PageTitle>
 
-<h1>Edit User</h1>
+<div class="card mb-4">
+    <div class="card-body">
+        <h1 class="card-title">Edit User</h1>
 
-@if (user is null)
-{
-    <p><em>Loading...</em></p>
-}
-else
-{
-    @if (!string.IsNullOrEmpty(message))
-    {
-        <div class="alert @(isError ? "alert-danger" : "alert-success")">@message</div>
-    }
-
-    <EditForm Model="model" OnValidSubmit="SaveAsync" FormName="editUser">
-        <DataAnnotationsValidator />
-        <ValidationSummary />
-
-        <div class="mb-3">
-            <label class="form-label">Full Name</label>
-            <InputText class="form-control" @bind-Value="model.FullName" />
-        </div>
-
-        <div class="mb-3">
-            <label class="form-label">Email</label>
-            <InputText class="form-control" @bind-Value="model.Email" />
-        </div>
-
-        <div class="mb-3">
-            <label class="form-label">Phone</label>
-            <InputText class="form-control" @bind-Value="model.Phone" />
-        </div>
-
-        <div class="mb-3">
-            <label class="form-label">Street Address</label>
-            <InputText class="form-control" @bind-Value="model.StreetAddress" />
-        </div>
-
-        <div class="mb-3 form-check">
-            <InputCheckbox class="form-check-input" @bind-Value="model.ShowContactInfo" />
-            <label class="form-check-label">Show email and phone in directory</label>
-        </div>
-
-        @if (isPresident)
+        @if (user is null)
         {
-            <div class="mb-3">
-                <label class="form-label">Roles</label>
-                <div class="form-check">
-                    <InputCheckbox class="form-check-input" @bind-Value="model.IsPresident" />
-                    <label class="form-check-label">President</label>
-                </div>
-                <div class="form-check">
-                    <InputCheckbox class="form-check-input" @bind-Value="model.IsTreasurer" />
-                    <label class="form-check-label">Treasurer</label>
-                </div>
-                <div class="form-check">
-                    <InputCheckbox class="form-check-input" @bind-Value="model.IsSecretary" />
-                    <label class="form-check-label">Secretary</label>
-                </div>
-            </div>
+            <p><em>Loading...</em></p>
         }
+        else
+        {
+            @if (!string.IsNullOrEmpty(message))
+            {
+                <div class="alert @(isError ? "alert-danger" : "alert-success")">@message</div>
+            }
 
-        <button type="submit" class="btn btn-primary">Save</button>
-        <a href="/admin/users" class="btn btn-secondary ms-2">Back</a>
-    </EditForm>
+            <EditForm Model="model" OnValidSubmit="SaveAsync" FormName="editUser">
+                <DataAnnotationsValidator />
+                <ValidationSummary />
 
-    <hr />
+                <div class="mb-3">
+                    <label class="form-label">Full Name</label>
+                    <InputText class="form-control" @bind-Value="model.FullName" />
+                </div>
 
-    <h5>Password Reset</h5>
-    <form method="post" @formname="resetPassword" @onsubmit="SendResetEmailAsync">
-        <AntiforgeryToken />
-        <button type="submit" class="btn btn-warning">Send Password Reset Email</button>
-    </form>
+                <div class="mb-3">
+                    <label class="form-label">Email</label>
+                    <InputText class="form-control" @bind-Value="model.Email" />
+                </div>
 
-    @if (resetEmailSent)
-    {
-        <div class="alert alert-success mt-3">Password reset email sent to @user.Email.</div>
-    }
+                <div class="mb-3">
+                    <label class="form-label">Phone</label>
+                    <InputText class="form-control" @bind-Value="model.Phone" />
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Street Address</label>
+                    <InputText class="form-control" @bind-Value="model.StreetAddress" />
+                </div>
+
+                <div class="mb-3 form-check">
+                    <InputCheckbox class="form-check-input" @bind-Value="model.ShowContactInfo" />
+                    <label class="form-check-label">Show email and phone in directory</label>
+                </div>
+
+                @if (isPresident)
+                {
+                    <div class="mb-3">
+                        <label class="form-label">Roles</label>
+                        <div class="form-check">
+                            <InputCheckbox class="form-check-input" @bind-Value="model.IsPresident" />
+                            <label class="form-check-label">President</label>
+                        </div>
+                        <div class="form-check">
+                            <InputCheckbox class="form-check-input" @bind-Value="model.IsTreasurer" />
+                            <label class="form-check-label">Treasurer</label>
+                        </div>
+                        <div class="form-check">
+                            <InputCheckbox class="form-check-input" @bind-Value="model.IsSecretary" />
+                            <label class="form-check-label">Secretary</label>
+                        </div>
+                    </div>
+                }
+
+                <button type="submit" class="btn btn-primary">Save</button>
+                <a href="/admin/users" class="btn btn-secondary ms-2">Back</a>
+            </EditForm>
+        }
+    </div>
+</div>
+
+@if (user is not null)
+{
+    <div class="card">
+        <div class="card-body">
+            <h5 class="card-title">Password Reset</h5>
+            <form method="post" @formname="resetPassword" @onsubmit="SendResetEmailAsync">
+                <AntiforgeryToken />
+                <button type="submit" class="btn btn-warning">Send Password Reset Email</button>
+            </form>
+
+            @if (resetEmailSent)
+            {
+                <div class="alert alert-success mt-3 mb-0">Password reset email sent to @user.Email.</div>
+            }
+        </div>
+    </div>
 }
 
 @code {

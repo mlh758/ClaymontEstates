@@ -7,15 +7,16 @@
 
 <PageTitle>Claymont Estates</PageTitle>
 
-<h1>Welcome to the Claymont Estates Community Portal</h1>
-
-<p>This is the community portal for our homeowners association. Residents can log in to view the neighborhood directory and HOA documents.</p>
-
-<p>If you're a resident and don't have an account yet, please contact an HOA officer to get set up.</p>
+<div class="card mb-4">
+    <div class="card-body">
+        <h1 class="card-title">Welcome to the Claymont Estates Community Portal</h1>
+        <p class="mb-2">This is the community portal for our homeowners association. Residents can log in to view the neighborhood directory and HOA documents.</p>
+        <p class="mb-0">If you're a resident and don't have an account yet, please contact an HOA officer to get set up.</p>
+    </div>
+</div>
 
 @if (events is not null && events.Count > 0)
 {
-    <hr />
     <h2>Upcoming Events</h2>
     @foreach (var evt in events)
     {

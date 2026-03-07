@@ -12,56 +12,60 @@
 
 <PageTitle>Create Event</PageTitle>
 
-<h1>Create Event</h1>
+<div class="card">
+    <div class="card-body">
+        <h1 class="card-title">Create Event</h1>
 
-<EditForm Model="model" OnValidSubmit="CreateAsync" FormName="createEvent">
-    <DataAnnotationsValidator />
-    <ValidationSummary />
+        <EditForm Model="model" OnValidSubmit="CreateAsync" FormName="createEvent">
+            <DataAnnotationsValidator />
+            <ValidationSummary />
 
-    <div class="mb-3">
-        <label class="form-label">Name</label>
-        <InputText class="form-control" @bind-Value="model.Name" />
+            <div class="mb-3">
+                <label class="form-label">Name</label>
+                <InputText class="form-control" @bind-Value="model.Name" />
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Description</label>
+                <InputTextArea class="form-control" rows="5" @bind-Value="model.Description" />
+                <div class="form-text">Basic HTML is allowed: links, bold, italic, and lists.</div>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Location</label>
+                <InputText class="form-control" @bind-Value="model.Location" />
+            </div>
+
+            <div class="row mb-3">
+                <div class="col-md-4">
+                    <label class="form-label">Date</label>
+                    <InputDate class="form-control" @bind-Value="model.Date" />
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Time</label>
+                    <InputDate Type="InputDateType.Time" class="form-control" @bind-Value="model.Time" />
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Duration (hours)</label>
+                    <InputNumber class="form-control" @bind-Value="model.DurationHours" />
+                </div>
+            </div>
+
+            <div class="mb-3 form-check">
+                <InputCheckbox class="form-check-input" @bind-Value="model.IsPublic" />
+                <label class="form-check-label">Public event (visible on home page)</label>
+            </div>
+
+            <div class="mb-3 form-check">
+                <InputCheckbox class="form-check-input" @bind-Value="model.RequiresRsvp" />
+                <label class="form-check-label">Require RSVP</label>
+            </div>
+
+            <button type="submit" class="btn btn-primary">Create Event</button>
+            <a href="/admin/events" class="btn btn-secondary ms-2">Cancel</a>
+        </EditForm>
     </div>
-
-    <div class="mb-3">
-        <label class="form-label">Description</label>
-        <InputTextArea class="form-control" rows="5" @bind-Value="model.Description" />
-        <div class="form-text">Basic HTML is allowed: links, bold, italic, and lists.</div>
-    </div>
-
-    <div class="mb-3">
-        <label class="form-label">Location</label>
-        <InputText class="form-control" @bind-Value="model.Location" />
-    </div>
-
-    <div class="row mb-3">
-        <div class="col-md-4">
-            <label class="form-label">Date</label>
-            <InputDate class="form-control" @bind-Value="model.Date" />
-        </div>
-        <div class="col-md-4">
-            <label class="form-label">Time</label>
-            <InputDate Type="InputDateType.Time" class="form-control" @bind-Value="model.Time" />
-        </div>
-        <div class="col-md-4">
-            <label class="form-label">Duration (hours)</label>
-            <InputNumber class="form-control" @bind-Value="model.DurationHours" />
-        </div>
-    </div>
-
-    <div class="mb-3 form-check">
-        <InputCheckbox class="form-check-input" @bind-Value="model.IsPublic" />
-        <label class="form-check-label">Public event (visible on home page)</label>
-    </div>
-
-    <div class="mb-3 form-check">
-        <InputCheckbox class="form-check-input" @bind-Value="model.RequiresRsvp" />
-        <label class="form-check-label">Require RSVP</label>
-    </div>
-
-    <button type="submit" class="btn btn-primary">Create Event</button>
-    <a href="/admin/events" class="btn btn-secondary ms-2">Cancel</a>
-</EditForm>
+</div>
 
 @code {
     [CascadingParameter]

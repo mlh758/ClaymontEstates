@@ -12,86 +12,95 @@
 
 <PageTitle>Edit Event</PageTitle>
 
-<h1>Edit Event</h1>
-
 @if (evt is null)
 {
     <p><em>Loading...</em></p>
 }
 else
 {
-    @if (!string.IsNullOrEmpty(message))
-    {
-        <div class="alert @(isError ? "alert-danger" : "alert-success")">@message</div>
-    }
+    <div class="card mb-4">
+        <div class="card-body">
+            <h1 class="card-title">Edit Event</h1>
 
-    <EditForm Model="model" OnValidSubmit="SaveAsync" FormName="editEvent">
-        <DataAnnotationsValidator />
-        <ValidationSummary />
+            @if (!string.IsNullOrEmpty(message))
+            {
+                <div class="alert @(isError ? "alert-danger" : "alert-success")">@message</div>
+            }
 
-        <div class="mb-3">
-            <label class="form-label">Name</label>
-            <InputText class="form-control" @bind-Value="model.Name" />
+            <EditForm Model="model" OnValidSubmit="SaveAsync" FormName="editEvent">
+                <DataAnnotationsValidator />
+                <ValidationSummary />
+
+                <div class="mb-3">
+                    <label class="form-label">Name</label>
+                    <InputText class="form-control" @bind-Value="model.Name" />
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Description</label>
+                    <InputTextArea class="form-control" rows="5" @bind-Value="model.Description" />
+                    <div class="form-text">Basic HTML is allowed: links, bold, italic, and lists.</div>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Location</label>
+                    <InputText class="form-control" @bind-Value="model.Location" />
+                </div>
+
+                <div class="row mb-3">
+                    <div class="col-md-4">
+                        <label class="form-label">Date</label>
+                        <InputDate class="form-control" @bind-Value="model.Date" />
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Time</label>
+                        <InputDate Type="InputDateType.Time" class="form-control" @bind-Value="model.Time" />
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Duration (hours)</label>
+                        <InputNumber class="form-control" @bind-Value="model.DurationHours" />
+                    </div>
+                </div>
+
+                <div class="mb-3 form-check">
+                    <InputCheckbox class="form-check-input" @bind-Value="model.IsPublic" />
+                    <label class="form-check-label">Public event (visible on home page)</label>
+                </div>
+
+                <div class="mb-3 form-check">
+                    <InputCheckbox class="form-check-input" @bind-Value="model.RequiresRsvp" />
+                    <label class="form-check-label">Require RSVP</label>
+                </div>
+
+                <button type="submit" class="btn btn-primary">Save</button>
+                <a href="/admin/events" class="btn btn-secondary ms-2">Back</a>
+            </EditForm>
         </div>
-
-        <div class="mb-3">
-            <label class="form-label">Description</label>
-            <InputTextArea class="form-control" rows="5" @bind-Value="model.Description" />
-            <div class="form-text">Basic HTML is allowed: links, bold, italic, and lists.</div>
-        </div>
-
-        <div class="mb-3">
-            <label class="form-label">Location</label>
-            <InputText class="form-control" @bind-Value="model.Location" />
-        </div>
-
-        <div class="row mb-3">
-            <div class="col-md-4">
-                <label class="form-label">Date</label>
-                <InputDate class="form-control" @bind-Value="model.Date" />
-            </div>
-            <div class="col-md-4">
-                <label class="form-label">Time</label>
-                <InputDate Type="InputDateType.Time" class="form-control" @bind-Value="model.Time" />
-            </div>
-            <div class="col-md-4">
-                <label class="form-label">Duration (hours)</label>
-                <InputNumber class="form-control" @bind-Value="model.DurationHours" />
-            </div>
-        </div>
-
-        <div class="mb-3 form-check">
-            <InputCheckbox class="form-check-input" @bind-Value="model.IsPublic" />
-            <label class="form-check-label">Public event (visible on home page)</label>
-        </div>
-
-        <div class="mb-3 form-check">
-            <InputCheckbox class="form-check-input" @bind-Value="model.RequiresRsvp" />
-            <label class="form-check-label">Require RSVP</label>
-        </div>
-
-        <button type="submit" class="btn btn-primary">Save</button>
-        <a href="/admin/events" class="btn btn-secondary ms-2">Back</a>
-    </EditForm>
+    </div>
 
     @if (evt.RequiresRsvp && evt.Rsvps.Count > 0)
     {
-        <hr />
-        <h5>RSVPs (@evt.Rsvps.Count)</h5>
-        <ul class="list-group">
-            @foreach (var rsvp in evt.Rsvps.OrderBy(r => r.User.FullName))
-            {
-                <li class="list-group-item">@rsvp.User.FullName (@rsvp.User.Email)</li>
-            }
-        </ul>
+        <div class="card mb-4">
+            <div class="card-body">
+                <h5 class="card-title">RSVPs (@evt.Rsvps.Count)</h5>
+                <ul class="list-group">
+                    @foreach (var rsvp in evt.Rsvps.OrderBy(r => r.User.FullName))
+                    {
+                        <li class="list-group-item">@rsvp.User.FullName (@rsvp.User.Email)</li>
+                    }
+                </ul>
+            </div>
+        </div>
     }
 
-    <hr />
-
-    <form method="post" @formname="deleteEvent" @onsubmit="DeleteAsync">
-        <AntiforgeryToken />
-        <button type="submit" class="btn btn-danger" onclick="return confirm('Are you sure you want to delete this event?');">Delete Event</button>
-    </form>
+    <div class="card">
+        <div class="card-body">
+            <form method="post" @formname="deleteEvent" @onsubmit="DeleteAsync">
+                <AntiforgeryToken />
+                <button type="submit" class="btn btn-danger" onclick="return confirm('Are you sure you want to delete this event?');">Delete Event</button>
+            </form>
+        </div>
+    </div>
 }
 
 @code {

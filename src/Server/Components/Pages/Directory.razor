@@ -11,48 +11,52 @@
 
 <PageTitle>Directory</PageTitle>
 
-<h1>Resident Directory</h1>
+<div class="card">
+    <div class="card-body">
+        <h1 class="card-title">Resident Directory</h1>
 
-<div class="mb-3">
-    <input type="text" class="form-control" placeholder="Search by name or address..."
-           @bind="searchQuery" @bind:event="oninput" @bind:after="OnSearchInput" />
+        <div class="mb-3">
+            <input type="text" class="form-control" placeholder="Search by name or address..."
+                   @bind="searchQuery" @bind:event="oninput" @bind:after="OnSearchInput" />
+        </div>
+
+        @if (residents is null)
+        {
+            <p><em>Loading...</em></p>
+        }
+        else if (residents.Count == 0)
+        {
+            <p class="mb-0">No residents found.</p>
+        }
+        else
+        {
+            <table class="table table-striped mb-0">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Role</th>
+                        <th>Address</th>
+                        <th>Email</th>
+                        <th>Phone</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var (resident, role) in residents)
+                    {
+                        var showPrivate = isOfficerOrAbove || resident.ShowContactInfo;
+                        <tr>
+                            <td>@resident.FullName</td>
+                            <td>@(role ?? "")</td>
+                            <td>@resident.StreetAddress</td>
+                            <td>@(showPrivate ? resident.Email : "—")</td>
+                            <td>@(showPrivate ? resident.PhoneNumber : "—")</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
+    </div>
 </div>
-
-@if (residents is null)
-{
-    <p><em>Loading...</em></p>
-}
-else if (residents.Count == 0)
-{
-    <p>No residents found.</p>
-}
-else
-{
-    <table class="table table-striped">
-        <thead>
-            <tr>
-                <th>Name</th>
-                <th>Role</th>
-                <th>Address</th>
-                <th>Email</th>
-                <th>Phone</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var (resident, role) in residents)
-            {
-                var showPrivate = isOfficerOrAbove || resident.ShowContactInfo;
-                <tr>
-                    <td>@resident.FullName</td>
-                    <td>@(role ?? "")</td>
-                    <td>@resident.StreetAddress</td>
-                    <td>@(showPrivate ? resident.Email : "—")</td>
-                    <td>@(showPrivate ? resident.PhoneNumber : "—")</td>
-                </tr>
-            }
-        </tbody>
-    </table>
-}
 
 @code {
     private List<(ApplicationUser User, string? Role)>? residents;

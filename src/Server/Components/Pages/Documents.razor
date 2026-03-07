@@ -9,50 +9,54 @@
 
 <PageTitle>Documents</PageTitle>
 
-<h1>Documents</h1>
+<div class="card">
+    <div class="card-body">
+        <h1 class="card-title">Documents</h1>
 
-<AuthorizeView Policy="@Roles.OfficerPolicy">
-    <Authorized>
-        <a href="/admin/documents/upload" class="btn btn-primary mb-3">Upload Document</a>
-    </Authorized>
-</AuthorizeView>
+        <AuthorizeView Policy="@Roles.OfficerPolicy">
+            <Authorized>
+                <a href="/admin/documents/upload" class="btn btn-primary mb-3">Upload Document</a>
+            </Authorized>
+        </AuthorizeView>
 
-@if (documents is null)
-{
-    <p><em>Loading...</em></p>
-}
-else if (documents.Count == 0)
-{
-    <p>No documents have been uploaded yet.</p>
-}
-else
-{
-    <table class="table table-striped">
-        <thead>
-            <tr>
-                <th>Name</th>
-                <th>Description</th>
-                <th>Effective Date</th>
-                <th>Uploaded By</th>
-                <th></th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var doc in documents)
-            {
-                <tr>
-                    <td>@doc.Name</td>
-                    <td>@(doc.Description ?? "")</td>
-                    <td>@doc.EffectiveDate.ToString("yyyy-MM-dd")</td>
-                    <td>@doc.UploadedByEmail</td>
-                    <td>
-                        <a href="/api/documents/@doc.Id/download" class="btn btn-sm btn-outline-primary">Download</a>
-                    </td>
-                </tr>
-            }
-        </tbody>
-    </table>
-}
+        @if (documents is null)
+        {
+            <p><em>Loading...</em></p>
+        }
+        else if (documents.Count == 0)
+        {
+            <p class="mb-0">No documents have been uploaded yet.</p>
+        }
+        else
+        {
+            <table class="table table-striped mb-0">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Description</th>
+                        <th>Effective Date</th>
+                        <th>Uploaded By</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var doc in documents)
+                    {
+                        <tr>
+                            <td>@doc.Name</td>
+                            <td>@(doc.Description ?? "")</td>
+                            <td>@doc.EffectiveDate.ToString("yyyy-MM-dd")</td>
+                            <td>@doc.UploadedByEmail</td>
+                            <td>
+                                <a href="/api/documents/@doc.Id/download" class="btn btn-sm btn-outline-primary">Download</a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
+    </div>
+</div>
 
 @code {
     private List<Document>? documents;

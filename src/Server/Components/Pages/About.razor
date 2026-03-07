@@ -6,45 +6,52 @@
 
 <PageTitle>About</PageTitle>
 
-<h1>Claymont Estates Homeowners Association</h1>
-<p>Gladstone, Missouri</p>
+<div class="card mb-4">
+    <div class="card-body">
+        <h1 class="card-title">Claymont Estates Homeowners Association</h1>
+        <p class="text-muted mb-3">Gladstone, Missouri</p>
+        <p class="mb-0">
+            This is the official website for the Claymont Estates Homeowners Association.
+            It serves as a hub for residents to access community documents, view the resident directory,
+            and stay connected with the neighborhood.
+        </p>
+    </div>
+</div>
 
-<p>
-    This is the official website for the Claymont Estates Homeowners Association.
-    It serves as a hub for residents to access community documents, view the resident directory,
-    and stay connected with the neighborhood.
-</p>
+<div class="card">
+    <div class="card-body">
+        <h3 class="card-title">Current Officers</h3>
 
-<h3>Current Officers</h3>
-
-@if (officers is null)
-{
-    <p><em>Loading...</em></p>
-}
-else if (officers.Count == 0)
-{
-    <p>No officers are currently listed.</p>
-}
-else
-{
-    <table class="table">
-        <thead>
-            <tr>
-                <th>Name</th>
-                <th>Role</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var (name, roles) in officers)
-            {
-                <tr>
-                    <td>@name</td>
-                    <td>@roles</td>
-                </tr>
-            }
-        </tbody>
-    </table>
-}
+        @if (officers is null)
+        {
+            <p><em>Loading...</em></p>
+        }
+        else if (officers.Count == 0)
+        {
+            <p class="mb-0">No officers are currently listed.</p>
+        }
+        else
+        {
+            <table class="table mb-0">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Role</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var (name, roles) in officers)
+                    {
+                        <tr>
+                            <td>@name</td>
+                            <td>@roles</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
+    </div>
+</div>
 
 @code {
     private List<(string Name, string Roles)>? officers;

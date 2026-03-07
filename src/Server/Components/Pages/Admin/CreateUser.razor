@@ -11,55 +11,59 @@
 
 <PageTitle>Create User</PageTitle>
 
-<h1>Create User</h1>
+<div class="card">
+    <div class="card-body">
+        <h1 class="card-title">Create User</h1>
 
-@if (created)
-{
-    <div class="alert alert-success">
-        <p>User created. An email has been sent with instructions to set their password.</p>
-    </div>
-    <a href="/admin/users" class="btn btn-secondary mt-2">Back to Users</a>
-}
-else
-{
-    @if (errors.Length > 0)
-    {
-        <div class="alert alert-danger">
-            @foreach (var error in errors)
+        @if (created)
+        {
+            <div class="alert alert-success mb-3">
+                <p class="mb-0">User created. An email has been sent with instructions to set their password.</p>
+            </div>
+            <a href="/admin/users" class="btn btn-secondary">Back to Users</a>
+        }
+        else
+        {
+            @if (errors.Length > 0)
             {
-                <p>@error</p>
+                <div class="alert alert-danger">
+                    @foreach (var error in errors)
+                    {
+                        <p>@error</p>
+                    }
+                </div>
             }
-        </div>
-    }
 
-    <EditForm Model="model" OnValidSubmit="CreateAsync" FormName="createUser">
-        <DataAnnotationsValidator />
-        <ValidationSummary />
+            <EditForm Model="model" OnValidSubmit="CreateAsync" FormName="createUser">
+                <DataAnnotationsValidator />
+                <ValidationSummary />
 
-        <div class="mb-3">
-            <label class="form-label">Full Name</label>
-            <InputText class="form-control" @bind-Value="model.FullName" />
-        </div>
+                <div class="mb-3">
+                    <label class="form-label">Full Name</label>
+                    <InputText class="form-control" @bind-Value="model.FullName" />
+                </div>
 
-        <div class="mb-3">
-            <label class="form-label">Email</label>
-            <InputText class="form-control" @bind-Value="model.Email" />
-        </div>
+                <div class="mb-3">
+                    <label class="form-label">Email</label>
+                    <InputText class="form-control" @bind-Value="model.Email" />
+                </div>
 
-        <div class="mb-3">
-            <label class="form-label">Phone</label>
-            <InputText class="form-control" @bind-Value="model.Phone" />
-        </div>
+                <div class="mb-3">
+                    <label class="form-label">Phone</label>
+                    <InputText class="form-control" @bind-Value="model.Phone" />
+                </div>
 
-        <div class="mb-3">
-            <label class="form-label">Street Address</label>
-            <InputText class="form-control" @bind-Value="model.StreetAddress" />
-        </div>
+                <div class="mb-3">
+                    <label class="form-label">Street Address</label>
+                    <InputText class="form-control" @bind-Value="model.StreetAddress" />
+                </div>
 
-        <button type="submit" class="btn btn-primary">Create & Send Invite</button>
-        <a href="/admin/users" class="btn btn-secondary ms-2">Cancel</a>
-    </EditForm>
-}
+                <button type="submit" class="btn btn-primary">Create & Send Invite</button>
+                <a href="/admin/users" class="btn btn-secondary ms-2">Cancel</a>
+            </EditForm>
+        }
+    </div>
+</div>
 
 @code {
     [CascadingParameter]

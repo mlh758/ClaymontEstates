@@ -13,54 +13,58 @@
 
 <PageTitle>Upload Document</PageTitle>
 
-<h1>Upload Document</h1>
+<div class="card">
+    <div class="card-body">
+        <h1 class="card-title">Upload Document</h1>
 
-@if (!string.IsNullOrEmpty(message))
-{
-    <div class="alert @(isError ? "alert-danger" : "alert-success")">@message</div>
-}
-
-@if (uploaded)
-{
-    <a href="/documents" class="btn btn-secondary">Back to Documents</a>
-}
-else
-{
-    <EditForm Model="model" OnValidSubmit="UploadAsync">
-        <DataAnnotationsValidator />
-        <ValidationSummary />
-
-        <div class="mb-3">
-            <label class="form-label">Name</label>
-            <InputText class="form-control" @bind-Value="model.Name" />
-        </div>
-
-        <div class="mb-3">
-            <label class="form-label">Description (optional)</label>
-            <InputTextArea class="form-control" @bind-Value="model.Description" />
-        </div>
-
-        <div class="mb-3">
-            <label class="form-label">Effective Date</label>
-            <InputDate class="form-control" @bind-Value="model.EffectiveDate" />
-        </div>
-
-        <div class="mb-3">
-            <label class="form-label">File (max 50 MB)</label>
-            <InputFile OnChange="OnFileSelected" class="form-control" />
-        </div>
-
-        @if (selectedFile is not null)
+        @if (!string.IsNullOrEmpty(message))
         {
-            <p class="text-muted">Selected: @selectedFile.Name (@FormatSize(selectedFile.Size))</p>
+            <div class="alert @(isError ? "alert-danger" : "alert-success")">@message</div>
         }
 
-        <button type="submit" class="btn btn-primary" disabled="@(selectedFile is null || uploading)">
-            @(uploading ? "Uploading..." : "Upload")
-        </button>
-        <a href="/documents" class="btn btn-secondary ms-2">Cancel</a>
-    </EditForm>
-}
+        @if (uploaded)
+        {
+            <a href="/documents" class="btn btn-secondary">Back to Documents</a>
+        }
+        else
+        {
+            <EditForm Model="model" OnValidSubmit="UploadAsync">
+                <DataAnnotationsValidator />
+                <ValidationSummary />
+
+                <div class="mb-3">
+                    <label class="form-label">Name</label>
+                    <InputText class="form-control" @bind-Value="model.Name" />
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Description (optional)</label>
+                    <InputTextArea class="form-control" @bind-Value="model.Description" />
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Effective Date</label>
+                    <InputDate class="form-control" @bind-Value="model.EffectiveDate" />
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">File (max 50 MB)</label>
+                    <InputFile OnChange="OnFileSelected" class="form-control" />
+                </div>
+
+                @if (selectedFile is not null)
+                {
+                    <p class="text-muted">Selected: @selectedFile.Name (@FormatSize(selectedFile.Size))</p>
+                }
+
+                <button type="submit" class="btn btn-primary" disabled="@(selectedFile is null || uploading)">
+                    @(uploading ? "Uploading..." : "Upload")
+                </button>
+                <a href="/documents" class="btn btn-secondary ms-2">Cancel</a>
+            </EditForm>
+        }
+    </div>
+</div>
 
 @code {
     private UploadModel model = new() { EffectiveDate = DateTime.Today };

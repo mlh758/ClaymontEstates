@@ -12,12 +12,15 @@
 
 <PageTitle>Events</PageTitle>
 
-<h1>Events</h1>
-
-<div class="d-flex align-items-center mb-3">
-    <button class="btn btn-outline-secondary btn-sm" @onclick="PreviousMonth">&laquo; Previous</button>
-    <h5 class="mx-3 mb-0">@currentMonth.ToString("MMMM yyyy")</h5>
-    <button class="btn btn-outline-secondary btn-sm" @onclick="NextMonth">Next &raquo;</button>
+<div class="card mb-4">
+    <div class="card-body">
+        <h1 class="card-title">Events</h1>
+        <div class="d-flex align-items-center">
+            <button class="btn btn-outline-secondary btn-sm" @onclick="PreviousMonth">&laquo; Previous</button>
+            <h5 class="mx-3 mb-0">@currentMonth.ToString("MMMM yyyy")</h5>
+            <button class="btn btn-outline-secondary btn-sm" @onclick="NextMonth">Next &raquo;</button>
+        </div>
+    </div>
 </div>
 
 @if (events is null)
