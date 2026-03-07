@@ -33,9 +33,16 @@
                 <ValidationMessage For="() => Input.PhoneNumber" class="text-danger" />
             </div>
             <div class="form-floating mb-3">
-                <input type="text" value="@streetAddress" id="streetAddress" class="form-control" disabled />
-                <label for="streetAddress" class="form-label">Street Address</label>
-                <div class="form-text">Contact an officer to update your address.</div>
+                @if (isOfficer)
+                {
+                    <InputText @bind-Value="Input.StreetAddress" id="Input.StreetAddress" class="form-control" placeholder="Street address" />
+                }
+                else
+                {
+                    <input type="text" value="@Input.StreetAddress" id="streetAddress" class="form-control" disabled />
+                    <div class="form-text">Contact an officer to update your address.</div>
+                }
+                <label for="@(isOfficer ? "Input.StreetAddress" : "streetAddress")" class="form-label">Street Address</label>
             </div>
             <div class="form-check mb-3">
                 <InputCheckbox @bind-Value="Input.ShowContactInfo" id="Input.ShowContactInfo" class="form-check-input" />
@@ -50,7 +57,7 @@
     private ApplicationUser? user;
     private string? username;
     private string? phoneNumber;
-    private string? streetAddress;
+    private bool isOfficer;
 
     [CascadingParameter]
     private HttpContext HttpContext { get; set; } = default!;
@@ -71,12 +78,13 @@
 
         username = await UserManager.GetUserNameAsync(user);
         phoneNumber = await UserManager.GetPhoneNumberAsync(user);
-        streetAddress = user.StreetAddress;
+        isOfficer = Roles.OfficerRoles.Any(r => HttpContext.User.IsInRole(r));
 
         if (!HttpMethods.IsPost(HttpContext.Request.Method))
         {
             Input.FullName = user.FullName;
             Input.PhoneNumber = phoneNumber;
+            Input.StreetAddress = user.StreetAddress;
             Input.ShowContactInfo = user.ShowContactInfo;
         }
     }
@@ -107,6 +115,12 @@
             }
         }
 
+        if (isOfficer && Input.StreetAddress != user.StreetAddress)
+        {
+            user.StreetAddress = Input.StreetAddress ?? user.StreetAddress;
+            changed = true;
+        }
+
         if (Input.ShowContactInfo != user.ShowContactInfo)
         {
             user.ShowContactInfo = Input.ShowContactInfo;
@@ -135,6 +149,9 @@
         [Phone]
         [Display(Name = "Phone number")]
         public string? PhoneNumber { get; set; }
+
+        [Display(Name = "Street Address")]
+        public string? StreetAddress { get; set; }
 
         [Display(Name = "Show contact info")]
         public bool ShowContactInfo { get; set; } = true;

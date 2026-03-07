@@ -1,0 +1,64 @@
+@page "/about"
+@using Server.Data
+@using Server.Services
+
+@inject UserService UserService
+
+<PageTitle>About</PageTitle>
+
+<h1>Claymont Estates Homeowners Association</h1>
+<p>Gladstone, Missouri</p>
+
+<p>
+    This is the official website for the Claymont Estates Homeowners Association.
+    It serves as a hub for residents to access community documents, view the resident directory,
+    and stay connected with the neighborhood.
+</p>
+
+<h3>Current Officers</h3>
+
+@if (officers is null)
+{
+    <p><em>Loading...</em></p>
+}
+else if (officers.Count == 0)
+{
+    <p>No officers are currently listed.</p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Role</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var (name, roles) in officers)
+            {
+                <tr>
+                    <td>@name</td>
+                    <td>@roles</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    private List<(string Name, string Roles)>? officers;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var users = await UserService.GetAllUsersWithRolesAsync();
+        officers = users
+            .Where(u => u.RoleNames.Any(r => Roles.OfficerRoles.Contains(r)))
+            .Select(u => (
+                u.FullName,
+                string.Join(", ", u.RoleNames.Where(r => Roles.OfficerRoles.Contains(r)))
+            ))
+            .OrderBy(o => o.Item2).ThenBy(o => o.FullName)
+            .ToList();
+    }
+}

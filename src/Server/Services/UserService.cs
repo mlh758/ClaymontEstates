@@ -1,4 +1,6 @@
+using System.Text;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.EntityFrameworkCore;
 using Server.Data;
 
@@ -59,11 +61,7 @@ public class UserService(UserManager<ApplicationUser> userManager, RoleManager<I
 
         await userManager.AddToRoleAsync(user, Roles.Resident);
 
-        var token = await userManager.GeneratePasswordResetTokenAsync(user);
-        var encodedToken = Uri.EscapeDataString(token);
-        var encodedEmail = Uri.EscapeDataString(email);
-        var inviteLink = $"{baseUrl}/Account/ResetPassword?code={encodedToken}&email={encodedEmail}";
-
+        var inviteLink = await GeneratePasswordResetLinkAsync(user, baseUrl);
         return (true, [], inviteLink);
     }
 
@@ -95,6 +93,14 @@ public class UserService(UserManager<ApplicationUser> userManager, RoleManager<I
 
         var addResult = await userManager.AddToRolesAsync(user, newRoles);
         return (addResult.Succeeded, addResult.Errors.Select(e => e.Description).ToArray());
+    }
+
+    public async Task<string> GeneratePasswordResetLinkAsync(ApplicationUser user, string baseUrl)
+    {
+        var token = await userManager.GeneratePasswordResetTokenAsync(user);
+        var encodedToken = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(token));
+        var encodedEmail = Uri.EscapeDataString(user.Email!);
+        return $"{baseUrl}/Account/ResetPassword?code={encodedToken}&email={encodedEmail}";
     }
 
     public async Task LogAuditAsync(string action, string actorEmail, string? ipAddress, Dictionary<string, string>? details = null)

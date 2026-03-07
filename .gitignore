@@ -484,3 +484,5 @@ $RECYCLE.BIN/
 # Server data (database and uploaded documents)
 src/Server/Data/app.db
 src/Server/Data/Documents/
+src/Server/Data/app.db*
+
