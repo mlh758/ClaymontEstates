@@ -1,0 +1,163 @@
+@page "/admin/events/{EventId:int}/attendees"
+@using Microsoft.AspNetCore.Authorization
+@using Server.Data
+@using Server.Services
+@attribute [Authorize(Policy = Roles.OfficerPolicy)]
+@rendermode InteractiveServer
+
+@inject EventService EventService
+@inject UserService UserService
+
+<PageTitle>Manage Attendees</PageTitle>
+
+@if (evt is null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <h1>Attendees — @evt.Name</h1>
+    <p class="text-muted">@evt.Date.ToLocalTime().ToString("MMM d, yyyy h:mm tt")</p>
+
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <strong>Available Residents</strong>
+                    <span class="badge bg-secondary">@FilteredAvailable.Count</span>
+                </div>
+                <div class="card-body p-2">
+                    <input type="text" class="form-control form-control-sm mb-2"
+                           placeholder="Filter..."
+                           @bind="availableFilter" @bind:event="oninput" />
+                    <div style="max-height: 400px; overflow-y: auto;">
+                        @if (FilteredAvailable.Count == 0)
+                        {
+                            <p class="text-muted text-center small py-3 mb-0">
+                                @(string.IsNullOrEmpty(availableFilter) ? "Everyone is attending!" : "No matches.")
+                            </p>
+                        }
+                        else
+                        {
+                            <div class="list-group list-group-flush">
+                                @foreach (var user in FilteredAvailable)
+                                {
+                                    <button type="button"
+                                            class="list-group-item list-group-item-action d-flex justify-content-between align-items-center py-2"
+                                            @onclick="() => AddAttendeeAsync(user)">
+                                        <div>
+                                            <div>@user.FullName</div>
+                                            <small class="text-muted">@user.Email</small>
+                                        </div>
+                                        <span class="text-success">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                                                <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4z"/>
+                                            </svg>
+                                        </span>
+                                    </button>
+                                }
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card border-success">
+                <div class="card-header d-flex justify-content-between align-items-center bg-success bg-opacity-10">
+                    <strong>Attending</strong>
+                    <span class="badge bg-success">@FilteredAttending.Count</span>
+                </div>
+                <div class="card-body p-2">
+                    <input type="text" class="form-control form-control-sm mb-2"
+                           placeholder="Filter..."
+                           @bind="attendingFilter" @bind:event="oninput" />
+                    <div style="max-height: 400px; overflow-y: auto;">
+                        @if (FilteredAttending.Count == 0)
+                        {
+                            <p class="text-muted text-center small py-3 mb-0">
+                                @(string.IsNullOrEmpty(attendingFilter) ? "No attendees yet." : "No matches.")
+                            </p>
+                        }
+                        else
+                        {
+                            <div class="list-group list-group-flush">
+                                @foreach (var user in FilteredAttending)
+                                {
+                                    <button type="button"
+                                            class="list-group-item list-group-item-action d-flex justify-content-between align-items-center py-2"
+                                            @onclick="() => RemoveAttendeeAsync(user)">
+                                        <div>
+                                            <div>@user.FullName</div>
+                                            <small class="text-muted">@user.Email</small>
+                                        </div>
+                                        <span class="text-danger">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                                                <path d="M4 8a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7A.5.5 0 0 1 4 8z"/>
+                                            </svg>
+                                        </span>
+                                    </button>
+                                }
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <a href="/admin/events/edit/@EventId" class="btn btn-secondary mt-3">Edit Event</a>
+    <a href="/admin/events" class="btn btn-secondary mt-3">Manage Events</a>
+}
+
+@code {
+    [Parameter] public int EventId { get; set; }
+
+    private Event? evt;
+    private List<ApplicationUser> allUsers = [];
+    private HashSet<string> attendeeUserIds = [];
+    private string? availableFilter;
+    private string? attendingFilter;
+
+    private List<ApplicationUser> FilteredAvailable => allUsers
+        .Where(u => !attendeeUserIds.Contains(u.Id))
+        .Where(u => MatchesFilter(u, availableFilter))
+        .ToList();
+
+    private List<ApplicationUser> FilteredAttending => allUsers
+        .Where(u => attendeeUserIds.Contains(u.Id))
+        .Where(u => MatchesFilter(u, attendingFilter))
+        .ToList();
+
+    protected override async Task OnInitializedAsync()
+    {
+        evt = await EventService.GetByIdAsync(EventId);
+        if (evt is null) return;
+
+        allUsers = await UserService.GetAllUsersWithRolesAsync();
+        attendeeUserIds = evt.Rsvps.Select(r => r.UserId).ToHashSet();
+    }
+
+    private async Task AddAttendeeAsync(ApplicationUser user)
+    {
+        var (success, _) = await EventService.RsvpAsync(EventId, user.Id);
+        if (success)
+            attendeeUserIds.Add(user.Id);
+    }
+
+    private async Task RemoveAttendeeAsync(ApplicationUser user)
+    {
+        var (success, _) = await EventService.CancelRsvpAsync(EventId, user.Id);
+        if (success)
+            attendeeUserIds.Remove(user.Id);
+    }
+
+    private static bool MatchesFilter(ApplicationUser user, string? filter)
+    {
+        if (string.IsNullOrWhiteSpace(filter)) return true;
+        var lower = filter.ToLower();
+        return (user.FullName.ToLower().Contains(lower))
+            || (user.Email?.ToLower().Contains(lower) ?? false);
+    }
+}

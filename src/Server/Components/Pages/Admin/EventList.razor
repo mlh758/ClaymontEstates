@@ -41,6 +41,10 @@ else
                     <td>@FormatDuration(evt.Duration)</td>
                     <td>
                         <a href="/admin/events/edit/@evt.Id" class="btn btn-sm btn-outline-secondary">Edit</a>
+                        @if (evt.RequiresRsvp)
+                        {
+                            <a href="/admin/events/@evt.Id/attendees" class="btn btn-sm btn-outline-secondary ms-1">Attendees</a>
+                        }
                     </td>
                 </tr>
             }

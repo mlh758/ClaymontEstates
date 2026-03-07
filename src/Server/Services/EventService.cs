@@ -107,16 +107,13 @@ public class EventService(ApplicationDbContext db, HtmlSanitizationService sanit
 
     public async Task<(bool Success, string? Error)> RsvpAsync(int eventId, string userId)
     {
-        var evt = await db.Events.FindAsync(eventId);
-        if (evt is null)
+        var exists = await db.Events.AnyAsync(e => e.Id == eventId);
+        if (!exists)
             return (false, "Event not found.");
-
-        if (!evt.RequiresRsvp)
-            return (false, "This event does not require RSVP.");
 
         var existing = await db.Rsvps.FirstOrDefaultAsync(r => r.EventId == eventId && r.UserId == userId);
         if (existing is not null)
-            return (true, null); // already RSVPed
+            return (true, null);
 
         db.Rsvps.Add(new Rsvp { EventId = eventId, UserId = userId });
         await db.SaveChangesAsync();
