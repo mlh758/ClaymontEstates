@@ -6,6 +6,7 @@ using Microsoft.EntityFrameworkCore;
 using Server.Components;
 using Server.Components.Account;
 using Server.Data;
+using Radzen;
 using Server.Services;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -13,6 +14,8 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
+
+builder.Services.AddRadzenComponents();
 
 builder.Services.AddCascadingAuthenticationState();
 builder.Services.AddScoped<IdentityRedirectManager>();

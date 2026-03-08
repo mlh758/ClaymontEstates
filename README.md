@@ -33,6 +33,6 @@ Events can be configured to be public (appearing on the home page), or private. 
 Most officer actions are logged into an Audit table. It's unlikely we'll ever need to worry about this, but it would be helpful to know if someone is vandalizing someone else's account if there is ever a dispute.
 
 
-## Future Improvements
+## UI
 
-- **Radzen.Blazor** — look into adopting this component library for a more polished UI. It includes a free HtmlEditor (WYSIWYG) that would replace the plain textarea for event descriptions, so officers don't need to write HTML. Adopting it would likely mean restyling the whole app to use Radzen components for consistency.
+The app uses [Radzen.Blazor](https://blazor.radzen.com/) for the Material theme and the WYSIWYG HTML editor on event pages. Bootstrap has been removed. Custom utility CSS in `app.css` provides layout, spacing, and component styling for static SSR pages.

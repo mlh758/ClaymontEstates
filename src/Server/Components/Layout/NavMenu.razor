@@ -3,9 +3,9 @@
 
 @inject NavigationManager NavigationManager
 
-<div class="top-row ps-3 navbar navbar-dark">
-    <div class="container-fluid">
-        <a class="navbar-brand d-flex align-items-center gap-2" href="">
+<div class="top-row">
+    <div class="top-row-inner">
+        <a class="navbar-brand" href="">
             <img src="favicon.webp" alt="Claymont Estates" style="height: 28px; width: auto;" />
             <span>Claymont Estates</span>
         </a>
@@ -15,14 +15,14 @@
 <input type="checkbox" title="Navigation menu" class="navbar-toggler" />
 
 <div class="nav-scrollable" onclick="document.querySelector('.navbar-toggler').click()">
-    <nav class="nav flex-column">
-        <div class="nav-item px-3">
+    <nav class="nav">
+        <div class="nav-item">
             <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
                 <span class="bi bi-house-door-fill-nav-menu" aria-hidden="true"></span> Home
             </NavLink>
         </div>
 
-        <div class="nav-item px-3">
+        <div class="nav-item">
             <NavLink class="nav-link" href="about">
                 <span class="bi bi-info-circle-nav-menu" aria-hidden="true"></span> About
             </NavLink>
@@ -30,19 +30,19 @@
 
         <AuthorizeView>
             <Authorized>
-                <div class="nav-item px-3">
+                <div class="nav-item">
                     <NavLink class="nav-link" href="directory">
                         <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> Directory
                     </NavLink>
                 </div>
 
-                <div class="nav-item px-3">
+                <div class="nav-item">
                     <NavLink class="nav-link" href="documents">
                         <span class="bi bi-folder-nav-menu" aria-hidden="true"></span> Documents
                     </NavLink>
                 </div>
 
-                <div class="nav-item px-3">
+                <div class="nav-item">
                     <NavLink class="nav-link" href="events">
                         <span class="bi bi-calendar-nav-menu" aria-hidden="true"></span> Events
                     </NavLink>
@@ -50,12 +50,12 @@
 
                 <AuthorizeView Policy="@Roles.OfficerPolicy">
                     <Authorized Context="adminContext">
-                        <div class="nav-item px-3">
+                        <div class="nav-item">
                             <NavLink class="nav-link" href="admin/users">
                                 <span class="bi bi-person-badge-nav-menu" aria-hidden="true"></span> Manage Users
                             </NavLink>
                         </div>
-                        <div class="nav-item px-3">
+                        <div class="nav-item">
                             <NavLink class="nav-link" href="admin/events">
                                 <span class="bi bi-calendar-nav-menu" aria-hidden="true"></span> Manage Events
                             </NavLink>
@@ -63,12 +63,12 @@
                     </Authorized>
                 </AuthorizeView>
 
-                <div class="nav-item px-3">
+                <div class="nav-item">
                     <NavLink class="nav-link" href="Account/Manage">
                         <span class="bi bi-person-nav-menu" aria-hidden="true"></span> @context.User.Identity?.Name
                     </NavLink>
                 </div>
-                <div class="nav-item px-3">
+                <div class="nav-item">
                     <form action="Account/Logout" method="post">
                         <AntiforgeryToken />
                         <input type="hidden" name="ReturnUrl" value="@currentUrl" />
@@ -79,7 +79,7 @@
                 </div>
             </Authorized>
             <NotAuthorized>
-                <div class="nav-item px-3">
+                <div class="nav-item">
                     <NavLink class="nav-link" href="Account/Login">
                         <span class="bi bi-person-badge-nav-menu" aria-hidden="true"></span> Login
                     </NavLink>

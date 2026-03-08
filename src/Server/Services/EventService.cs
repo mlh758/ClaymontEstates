@@ -9,7 +9,7 @@ public class EventSummary
     public int RsvpCount { get; set; }
 }
 
-public class EventService(ApplicationDbContext db, HtmlSanitizationService sanitizer)
+public class EventService(ApplicationDbContext db, HtmlSanitizationService sanitizer, ILogger<EventService> logger)
 {
     public async Task<List<Event>> GetRecentAndUpcomingAsync()
     {
@@ -63,10 +63,11 @@ public class EventService(ApplicationDbContext db, HtmlSanitizationService sanit
 
     public async Task<Event> CreateAsync(string name, string description, DateTime date, TimeSpan duration, string? location, bool isPublic, bool requiresRsvp, string createdByEmail)
     {
+        logger.LogInformation("CreateEvent description before sanitize: {Description}", description);
         var evt = new Event
         {
             Name = name,
-            Description = sanitizer.Sanitize(description.Replace("\r\n", "<br />").Replace("\n", "<br />")),
+            Description = sanitizer.Sanitize(description),
             Date = date,
             Duration = duration,
             Location = location,
@@ -82,8 +83,10 @@ public class EventService(ApplicationDbContext db, HtmlSanitizationService sanit
 
     public async Task<(bool Success, string? Error)> UpdateAsync(Event evt, string name, string description, DateTime date, TimeSpan duration, string? location, bool isPublic, bool requiresRsvp)
     {
+        
+        logger.LogInformation("UpdateEvent description before sanitize: {Description}", description);
         evt.Name = name;
-        evt.Description = sanitizer.Sanitize(description.Replace("\r\n", "<br />").Replace("\n", "<br />"));
+        evt.Description = sanitizer.Sanitize(description);
         evt.Date = date;
         evt.Duration = duration;
         evt.Location = location;

@@ -5,9 +5,11 @@
 @using Server.Data
 @using Server.Services
 @attribute [Authorize(Policy = Roles.OfficerPolicy)]
+@rendermode InteractiveServer
 
 @inject EventService EventService
 @inject AuditService AuditService
+@inject AuthenticationStateProvider AuthStateProvider
 @inject NavigationManager Nav
 
 <PageTitle>Create Event</PageTitle>
@@ -16,49 +18,66 @@
     <div class="card-body">
         <h1 class="card-title">Create Event</h1>
 
-        <EditForm Model="model" OnValidSubmit="CreateAsync" FormName="createEvent">
+        <EditForm Model="model" OnValidSubmit="CreateAsync">
             <DataAnnotationsValidator />
             <ValidationSummary />
 
             <div class="mb-3">
-                <label class="form-label">Name</label>
-                <InputText class="form-control" @bind-Value="model.Name" />
+                <label class="form-label" for="event-name">Name</label>
+                <InputText id="event-name" class="form-control" @bind-Value="model.Name" />
             </div>
 
             <div class="mb-3">
                 <label class="form-label">Description</label>
-                <InputTextArea class="form-control" rows="5" @bind-Value="model.Description" />
-                <div class="form-text">Basic HTML is allowed: links, bold, italic, and lists.</div>
+                <RadzenHtmlEditor @bind-Value="model.Description" style="height: 250px;">
+                    <RadzenHtmlEditorUndo />
+                    <RadzenHtmlEditorRedo />
+                    <RadzenHtmlEditorSeparator />
+                    <RadzenHtmlEditorBold />
+                    <RadzenHtmlEditorItalic />
+                    <RadzenHtmlEditorUnderline />
+                    <RadzenHtmlEditorStrikeThrough />
+                    <RadzenHtmlEditorSeparator />
+                    <RadzenHtmlEditorUnorderedList />
+                    <RadzenHtmlEditorOrderedList />
+                    <RadzenHtmlEditorSeparator />
+                    <RadzenHtmlEditorColor />
+                    <RadzenHtmlEditorSeparator />
+                    <RadzenHtmlEditorLink />
+                    <RadzenHtmlEditorUnlink />
+                    <RadzenHtmlEditorSeparator />
+                    <RadzenHtmlEditorSource />
+                </RadzenHtmlEditor>
             </div>
 
             <div class="mb-3">
-                <label class="form-label">Location</label>
-                <InputText class="form-control" @bind-Value="model.Location" />
+                <label class="form-label" for="event-location">Location</label>
+                <InputText id="event-location" class="form-control" @bind-Value="model.Location" />
             </div>
 
             <div class="row mb-3">
                 <div class="col-md-4">
-                    <label class="form-label">Date</label>
-                    <InputDate class="form-control" @bind-Value="model.Date" />
+                    <label class="form-label" for="event-date">Date</label>
+                    <InputDate id="event-date" class="form-control" @bind-Value="model.Date" />
                 </div>
                 <div class="col-md-4">
-                    <label class="form-label">Time</label>
-                    <InputDate Type="InputDateType.Time" class="form-control" @bind-Value="model.Time" />
+                    <label class="form-label" for="event-time">Time</label>
+                    <InputDate id="event-time" Type="InputDateType.Time" class="form-control" @bind-Value="model.Time" />
                 </div>
                 <div class="col-md-4">
-                    <label class="form-label">Duration (hours)</label>
-                    <InputNumber class="form-control" @bind-Value="model.DurationHours" />
+                    <label class="form-label" for="event-duration">Duration (hours)</label>
+                    <InputNumber id="event-duration" class="form-control" @bind-Value="model.DurationHours" />
                 </div>
             </div>
 
             <div class="mb-3 form-check">
-                <InputCheckbox class="form-check-input" @bind-Value="model.IsPublic" />
-                <label class="form-check-label">Public event (visible on home page)</label>
+                <InputCheckbox id="event-public" class="form-check-input" @bind-Value="model.IsPublic" />
+                <label class="form-check-label" for="event-public">Public event (visible on home page)</label>
             </div>
 
             <div class="mb-3 form-check">
-                <InputCheckbox class="form-check-input" @bind-Value="model.RequiresRsvp" />
-                <label class="form-check-label">Require RSVP</label>
+                <InputCheckbox id="event-rsvp" class="form-check-input" @bind-Value="model.RequiresRsvp" />
+                <label class="form-check-label" for="event-rsvp">Require RSVP</label>
             </div>
 
             <button type="submit" class="btn btn-primary">Create Event</button>
@@ -68,26 +87,21 @@
 </div>
 
 @code {
-    [CascadingParameter]
-    private HttpContext HttpContext { get; set; } = default!;
-
-    [SupplyParameterFromForm]
-    private EventModel? model { get; set; }
-
-    protected override void OnInitialized() => model ??= new();
+    private EventModel model = new();
 
     private async Task CreateAsync()
     {
         var dateTime = model.Date.Add(model.Time.TimeOfDay);
         var duration = TimeSpan.FromHours(model.DurationHours);
-        var actorEmail = HttpContext.User.FindFirstValue(ClaimTypes.Email) ?? "unknown";
+
+        var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+        var actorEmail = authState.User.FindFirstValue(ClaimTypes.Email) ?? "unknown";
 
         var evt = await EventService.CreateAsync(
-            model.Name, model.Description, dateTime, duration,
+            model.Name, model.Description ?? "", dateTime, duration,
             model.Location, model.IsPublic, model.RequiresRsvp, actorEmail);
 
-        var ip = HttpContext.Connection.RemoteIpAddress?.ToString();
-        await AuditService.LogAsync(AuditAction.CreateEvent, actorEmail, ip, new Dictionary<string, string>
+        await AuditService.LogAsync(AuditAction.CreateEvent, actorEmail, null, new Dictionary<string, string>
         {
             ["EventName"] = evt.Name,
             ["EventId"] = evt.Id.ToString()
@@ -101,8 +115,7 @@
         [Required]
         public string Name { get; set; } = "";
 
-        [Required]
-        public string Description { get; set; } = "";
+        public string? Description { get; set; } = "";
 
         public DateTime Date { get; set; } = DateTime.Today;
 
