@@ -17,16 +17,14 @@
 
 @if (currentPasskeys is { Count: > 0 })
 {
-    <table class="table">
-        <tbody>
+    <RadzenTable>
+        <RadzenTableBody>
             @foreach (var passkey in currentPasskeys)
             {
-                <tr>
-                    <td>@(passkey.Name ?? "Unnamed passkey")</td>
-                    <td>
-                        @{
-                            var credentialId = Base64Url.EncodeToString(passkey.CredentialId);
-                        }
+                var credentialId = Base64Url.EncodeToString(passkey.CredentialId);
+                <RadzenTableRow>
+                    <RadzenTableCell>@(passkey.Name ?? "Unnamed passkey")</RadzenTableCell>
+                    <RadzenTableCell>
                         <form @formname="@($"update-passkey-{credentialId}")" @onsubmit="UpdatePasskey" method="post">
                             <AntiforgeryToken />
                             <div>
@@ -35,18 +33,18 @@
                                 <button type="submit" name="Action" value="delete" class="btn btn-danger" title="Remove this passkey from your account">Delete</button>
                             </div>
                         </form>
-                    </td>
-                </tr>
+                    </RadzenTableCell>
+                </RadzenTableRow>
             }
-        </tbody>
-    </table>
+        </RadzenTableBody>
+    </RadzenTable>
 }
 else
 {
     <p>No passkeys are registered.</p>
 }
 
-<form @formname="add-passkey" @onsubmit="AddPasskey" method="post">
+<form @formname="add-passkey" @onsubmit="AddPasskey" method="post" class="mt-3">
     <AntiforgeryToken />
     @if (currentPasskeys is { Count: >= MaxPasskeyCount })
     {

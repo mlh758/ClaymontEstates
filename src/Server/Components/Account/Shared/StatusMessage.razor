@@ -1,9 +1,9 @@
 ﻿@if (!string.IsNullOrEmpty(DisplayMessage))
 {
-    var statusMessageClass = DisplayMessage.StartsWith("Error") ? "danger" : "success";
-    <div class="alert alert-@statusMessageClass" role="alert">
+    var isError = DisplayMessage.StartsWith("Error");
+    <RadzenAlert AlertStyle="@(isError ? AlertStyle.Danger : AlertStyle.Success)" AllowClose="false" ShowIcon="false">
         @DisplayMessage
-    </div>
+    </RadzenAlert>
 }
 
 @code {

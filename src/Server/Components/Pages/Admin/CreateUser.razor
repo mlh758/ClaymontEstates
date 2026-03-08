@@ -17,21 +17,21 @@
 
         @if (created)
         {
-            <div class="alert alert-success mb-3">
-                <p class="mb-0">User created. An email has been sent with instructions to set their password.</p>
-            </div>
+            <RadzenAlert AlertStyle="AlertStyle.Success" AllowClose="false" ShowIcon="false" class="mb-3">
+                User created. An email has been sent with instructions to set their password.
+            </RadzenAlert>
             <a href="/admin/users" class="btn btn-secondary">Back to Users</a>
         }
         else
         {
             @if (errors.Length > 0)
             {
-                <div class="alert alert-danger">
+                <RadzenAlert AlertStyle="AlertStyle.Danger" AllowClose="false" ShowIcon="false">
                     @foreach (var error in errors)
                     {
                         <p>@error</p>
                     }
-                </div>
+                </RadzenAlert>
             }
 
             <EditForm Model="model" OnValidSubmit="CreateAsync" FormName="createUser">

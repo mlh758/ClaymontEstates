@@ -30,36 +30,36 @@
         }
         else
         {
-            <table class="table table-striped mb-0">
-                <thead>
-                    <tr>
-                        <th>Name</th>
-                        <th>Role</th>
-                        <th>Address</th>
-                        <th>Email</th>
-                        <th>Phone</th>
-                    </tr>
-                </thead>
-                <tbody>
+            <RadzenTable >
+                <RadzenTableHeader>
+                    <RadzenTableHeaderRow>
+                        <RadzenTableHeaderCell>Name</RadzenTableHeaderCell>
+                        <RadzenTableHeaderCell>Role</RadzenTableHeaderCell>
+                        <RadzenTableHeaderCell>Address</RadzenTableHeaderCell>
+                        <RadzenTableHeaderCell>Email</RadzenTableHeaderCell>
+                        <RadzenTableHeaderCell>Phone</RadzenTableHeaderCell>
+                    </RadzenTableHeaderRow>
+                </RadzenTableHeader>
+                <RadzenTableBody>
                     @foreach (var (resident, role) in residents)
                     {
                         var showPrivate = isOfficerOrAbove || resident.ShowContactInfo;
-                        <tr>
-                            <td>@resident.FullName</td>
-                            <td>@(role ?? "")</td>
-                            <td>@resident.StreetAddress</td>
-                            <td>@(showPrivate ? resident.Email : "—")</td>
-                            <td>@(showPrivate ? resident.PhoneNumber : "—")</td>
-                        </tr>
+                        <RadzenTableRow>
+                            <RadzenTableCell>@resident.FullName</RadzenTableCell>
+                            <RadzenTableCell>@(role ?? "")</RadzenTableCell>
+                            <RadzenTableCell>@resident.StreetAddress</RadzenTableCell>
+                            <RadzenTableCell>@(showPrivate ? resident.Email : "—")</RadzenTableCell>
+                            <RadzenTableCell>@(showPrivate ? resident.PhoneNumber : "—")</RadzenTableCell>
+                        </RadzenTableRow>
                     }
-                </tbody>
-            </table>
+                </RadzenTableBody>
+            </RadzenTable>
         }
     </div>
 </div>
 
 @code {
-    private List<(ApplicationUser User, string? Role)>? residents;
+    private List<(ApplicationUser User, string? DisplayRoles)>? residents;
     private string? searchQuery;
     private bool isOfficerOrAbove;
     private Timer? debounceTimer;

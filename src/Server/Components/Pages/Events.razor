@@ -15,9 +15,9 @@
 <div class="card mb-4">
     <div class="card-body">
         <h1 class="card-title">Events</h1>
-        <div class="d-flex align-items-center">
+        <div class="d-flex align-items-center" style="gap: calc(var(--spacing) * 6)">
             <button class="btn btn-outline-secondary btn-sm" @onclick="PreviousMonth">&laquo; Previous</button>
-            <h5 class="mx-3 mb-0">@currentMonth.ToString("MMMM yyyy")</h5>
+            <h5>@currentMonth.ToString("MMMM yyyy")</h5>
             <button class="btn btn-outline-secondary btn-sm" @onclick="NextMonth">Next &raquo;</button>
         </div>
     </div>
@@ -39,7 +39,7 @@ else
             @if (summary.Event.RequiresRsvp)
             {
                 var attending = userRsvpEventIds.Contains(summary.Event.Id);
-                <div class="d-flex align-items-center gap-2">
+                <div class="d-flex align-items-center" style="gap: calc(var(--spacing) * 2)">
                     <span class="text-muted">@summary.RsvpCount attending</span>
                     @if (attending)
                     {

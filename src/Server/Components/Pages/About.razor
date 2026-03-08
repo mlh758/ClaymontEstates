@@ -31,23 +31,23 @@
         }
         else
         {
-            <table class="table mb-0">
-                <thead>
-                    <tr>
-                        <th>Name</th>
-                        <th>Role</th>
-                    </tr>
-                </thead>
-                <tbody>
+            <RadzenTable>
+                <RadzenTableHeader>
+                    <RadzenTableHeaderRow>
+                        <RadzenTableHeaderCell>Name</RadzenTableHeaderCell>
+                        <RadzenTableHeaderCell>Role</RadzenTableHeaderCell>
+                    </RadzenTableHeaderRow>
+                </RadzenTableHeader>
+                <RadzenTableBody>
                     @foreach (var (name, roles) in officers)
                     {
-                        <tr>
-                            <td>@name</td>
-                            <td>@roles</td>
-                        </tr>
+                        <RadzenTableRow>
+                            <RadzenTableCell>@name</RadzenTableCell>
+                            <RadzenTableCell>@roles</RadzenTableCell>
+                        </RadzenTableRow>
                     }
-                </tbody>
-            </table>
+                </RadzenTableBody>
+            </RadzenTable>
         }
     </div>
 </div>

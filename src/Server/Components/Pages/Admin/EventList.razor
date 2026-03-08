@@ -24,34 +24,34 @@
         }
         else
         {
-            <table class="table table-striped mb-0">
-                <thead>
-                    <tr>
-                        <th>Name</th>
-                        <th>Date</th>
-                        <th>Duration</th>
-                        <th></th>
-                    </tr>
-                </thead>
-                <tbody>
+            <RadzenTable>
+                <RadzenTableHeader>
+                    <RadzenTableHeaderRow>
+                        <RadzenTableHeaderCell>Name</RadzenTableHeaderCell>
+                        <RadzenTableHeaderCell>Date</RadzenTableHeaderCell>
+                        <RadzenTableHeaderCell>Duration</RadzenTableHeaderCell>
+                        <RadzenTableHeaderCell></RadzenTableHeaderCell>
+                    </RadzenTableHeaderRow>
+                </RadzenTableHeader>
+                <RadzenTableBody>
                     @foreach (var evt in events)
                     {
                         var isPast = evt.Date.Add(evt.Duration) < DateTime.UtcNow;
-                        <tr class="@(isPast ? "text-muted" : "")">
-                            <td>@evt.Name</td>
-                            <td>@evt.Date.ToLocalTime().ToString("MMM d, yyyy h:mm tt")</td>
-                            <td>@FormatDuration(evt.Duration)</td>
-                            <td>
+                        <RadzenTableRow Style="@(isPast ? "color: var(--rz-secondary)" : "")">
+                            <RadzenTableCell>@evt.Name</RadzenTableCell>
+                            <RadzenTableCell>@evt.Date.ToLocalTime().ToString("MMM d, yyyy h:mm tt")</RadzenTableCell>
+                            <RadzenTableCell>@FormatDuration(evt.Duration)</RadzenTableCell>
+                            <RadzenTableCell>
                                 <a href="/admin/events/edit/@evt.Id" class="btn btn-sm btn-outline-secondary">Edit</a>
                                 @if (evt.RequiresRsvp)
                                 {
                                     <a href="/admin/events/@evt.Id/attendees" class="btn btn-sm btn-outline-secondary ms-1">Attendees</a>
                                 }
-                            </td>
-                        </tr>
+                            </RadzenTableCell>
+                        </RadzenTableRow>
                     }
-                </tbody>
-            </table>
+                </RadzenTableBody>
+            </RadzenTable>
         }
     </div>
 </div>

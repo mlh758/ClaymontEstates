@@ -22,33 +22,33 @@
         }
         else
         {
-            <table class="table table-striped mb-0">
-                <thead>
-                    <tr>
-                        <th>Name</th>
-                        <th>Email</th>
-                        <th>Phone</th>
-                        <th>Address</th>
-                        <th>Role</th>
-                        <th></th>
-                    </tr>
-                </thead>
-                <tbody>
+            <RadzenTable>
+                <RadzenTableHeader>
+                    <RadzenTableHeaderRow>
+                        <RadzenTableHeaderCell>Name</RadzenTableHeaderCell>
+                        <RadzenTableHeaderCell>Email</RadzenTableHeaderCell>
+                        <RadzenTableHeaderCell>Phone</RadzenTableHeaderCell>
+                        <RadzenTableHeaderCell>Address</RadzenTableHeaderCell>
+                        <RadzenTableHeaderCell>Role</RadzenTableHeaderCell>
+                        <RadzenTableHeaderCell></RadzenTableHeaderCell>
+                    </RadzenTableHeaderRow>
+                </RadzenTableHeader>
+                <RadzenTableBody>
                     @foreach (var user in users)
                     {
-                        <tr>
-                            <td>@user.FullName</td>
-                            <td>@user.Email</td>
-                            <td>@user.PhoneNumber</td>
-                            <td>@user.StreetAddress</td>
-                            <td>@string.Join(", ", user.RoleNames)</td>
-                            <td>
+                        <RadzenTableRow>
+                            <RadzenTableCell>@user.FullName</RadzenTableCell>
+                            <RadzenTableCell>@user.Email</RadzenTableCell>
+                            <RadzenTableCell>@user.PhoneNumber</RadzenTableCell>
+                            <RadzenTableCell>@user.StreetAddress</RadzenTableCell>
+                            <RadzenTableCell>@string.Join(", ", user.RoleNames)</RadzenTableCell>
+                            <RadzenTableCell>
                                 <a href="/admin/users/edit/@user.Id" class="btn btn-sm btn-outline-secondary">Edit</a>
-                            </td>
-                        </tr>
+                            </RadzenTableCell>
+                        </RadzenTableRow>
                     }
-                </tbody>
-            </table>
+                </RadzenTableBody>
+            </RadzenTable>
         }
     </div>
 </div>

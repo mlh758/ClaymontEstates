@@ -1,0 +1,24 @@
+.manage-layout {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.manage-sidebar {
+    flex-shrink: 0;
+}
+
+.manage-content {
+    flex: 1;
+    min-width: 0;
+}
+
+@media (min-width: 992px) {
+    .manage-layout {
+        flex-direction: row;
+    }
+
+    .manage-sidebar {
+        width: 220px;
+    }
+}

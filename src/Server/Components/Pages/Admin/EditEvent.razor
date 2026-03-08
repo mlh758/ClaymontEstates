@@ -26,7 +26,7 @@ else
 
             @if (!string.IsNullOrEmpty(message))
             {
-                <div class="alert @(isError ? "alert-danger" : "alert-success")">@message</div>
+                <RadzenAlert AlertStyle="@(isError ? AlertStyle.Danger : AlertStyle.Success)" AllowClose="false" ShowIcon="false">@message</RadzenAlert>
             }
 
             <EditForm Model="model" OnValidSubmit="SaveAsync">

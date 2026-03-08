@@ -29,31 +29,31 @@
         }
         else
         {
-            <table class="table table-striped mb-0">
-                <thead>
-                    <tr>
-                        <th>Name</th>
-                        <th>Description</th>
-                        <th>Effective Date</th>
-                        <th>Uploaded By</th>
-                        <th></th>
-                    </tr>
-                </thead>
-                <tbody>
+            <RadzenTable>
+                <RadzenTableHeader>
+                    <RadzenTableHeaderRow>
+                        <RadzenTableHeaderCell>Name</RadzenTableHeaderCell>
+                        <RadzenTableHeaderCell>Description</RadzenTableHeaderCell>
+                        <RadzenTableHeaderCell>Effective Date</RadzenTableHeaderCell>
+                        <RadzenTableHeaderCell>Uploaded By</RadzenTableHeaderCell>
+                        <RadzenTableHeaderCell></RadzenTableHeaderCell>
+                    </RadzenTableHeaderRow>
+                </RadzenTableHeader>
+                <RadzenTableBody>
                     @foreach (var doc in documents)
                     {
-                        <tr>
-                            <td>@doc.Name</td>
-                            <td>@(doc.Description ?? "")</td>
-                            <td>@doc.EffectiveDate.ToString("yyyy-MM-dd")</td>
-                            <td>@doc.UploadedByEmail</td>
-                            <td>
+                        <RadzenTableRow>
+                            <RadzenTableCell>@doc.Name</RadzenTableCell>
+                            <RadzenTableCell>@(doc.Description ?? "")</RadzenTableCell>
+                            <RadzenTableCell>@doc.EffectiveDate.ToString("yyyy-MM-dd")</RadzenTableCell>
+                            <RadzenTableCell>@doc.UploadedByEmail</RadzenTableCell>
+                            <RadzenTableCell>
                                 <a href="/api/documents/@doc.Id/download" class="btn btn-sm btn-outline-primary">Download</a>
-                            </td>
-                        </tr>
+                            </RadzenTableCell>
+                        </RadzenTableRow>
                     }
-                </tbody>
-            </table>
+                </RadzenTableBody>
+            </RadzenTable>
         }
     </div>
 </div>

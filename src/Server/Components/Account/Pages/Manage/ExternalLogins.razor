@@ -15,13 +15,13 @@
 @if (currentLogins?.Count > 0)
 {
     <h3>Registered Logins</h3>
-    <table class="table">
-        <tbody>
+    <RadzenTable>
+        <RadzenTableBody>
             @foreach (var login in currentLogins)
             {
-                <tr>
-                    <td>@login.ProviderDisplayName</td>
-                    <td>
+                <RadzenTableRow>
+                    <RadzenTableCell>@login.ProviderDisplayName</RadzenTableCell>
+                    <RadzenTableCell>
                         @if (showRemoveButton)
                         {
                             <form @formname="@($"remove-login-{login.LoginProvider}")" @onsubmit="OnSubmitAsync" method="post">
@@ -37,11 +37,11 @@
                         {
                             @: &nbsp;
                         }
-                    </td>
-                </tr>
+                    </RadzenTableCell>
+                </RadzenTableRow>
             }
-        </tbody>
-    </table>
+        </RadzenTableBody>
+    </RadzenTable>
 }
 @if (otherLogins?.Count > 0)
 {
