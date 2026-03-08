@@ -96,6 +96,12 @@ public class UserService(UserManager<ApplicationUser> userManager, RoleManager<I
         return (addResult.Succeeded, addResult.Errors.Select(e => e.Description).ToArray());
     }
 
+    public async Task<(bool Success, string[] Errors)> DeleteUserAsync(ApplicationUser user)
+    {
+        var result = await userManager.DeleteAsync(user);
+        return (result.Succeeded, result.Errors.Select(e => e.Description).ToArray());
+    }
+
     public async Task SendPasswordResetEmailAsync(ApplicationUser user, string baseUrl, bool isNewAccount = false)
     {
         var token = await userManager.GeneratePasswordResetTokenAsync(user);
@@ -129,6 +135,9 @@ public class UserService(UserManager<ApplicationUser> userManager, RoleManager<I
             .Subject(subject)
             .Body(body, isHtml: true)
             .SendAsync();
+
+        user.LastPasswordResetSentAt = DateTime.UtcNow;
+        await userManager.UpdateAsync(user);
     }
 
     public async Task EnsureRolesAsync()

@@ -8,6 +8,7 @@ public enum AuditAction
 {
     CreateUser,
     EditUser,
+    DeleteUser,
     SendPasswordReset,
     UploadDocument,
     DeleteDocument,

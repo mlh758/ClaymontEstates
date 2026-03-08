@@ -7,7 +7,6 @@
 
 @inject UserService UserService
 @inject AuditService AuditService
-@inject AuthenticationStateProvider AuthStateProvider
 @inject NavigationManager Nav
 
 <PageTitle>Edit User</PageTitle>
@@ -56,24 +55,21 @@
                     <label class="form-check-label">Show email and phone in directory</label>
                 </div>
 
-                @if (isPresident)
-                {
-                    <div class="mb-3">
-                        <label class="form-label">Roles</label>
-                        <div class="form-check">
-                            <InputCheckbox class="form-check-input" @bind-Value="model.IsPresident" />
-                            <label class="form-check-label">President</label>
-                        </div>
-                        <div class="form-check">
-                            <InputCheckbox class="form-check-input" @bind-Value="model.IsTreasurer" />
-                            <label class="form-check-label">Treasurer</label>
-                        </div>
-                        <div class="form-check">
-                            <InputCheckbox class="form-check-input" @bind-Value="model.IsSecretary" />
-                            <label class="form-check-label">Secretary</label>
-                        </div>
+                <div class="mb-3">
+                    <label class="form-label">Roles</label>
+                    <div class="form-check">
+                        <InputCheckbox class="form-check-input" @bind-Value="model.IsPresident" />
+                        <label class="form-check-label">President</label>
                     </div>
-                }
+                    <div class="form-check">
+                        <InputCheckbox class="form-check-input" @bind-Value="model.IsTreasurer" />
+                        <label class="form-check-label">Treasurer</label>
+                    </div>
+                    <div class="form-check">
+                        <InputCheckbox class="form-check-input" @bind-Value="model.IsSecretary" />
+                        <label class="form-check-label">Secretary</label>
+                    </div>
+                </div>
 
                 <button type="submit" class="btn btn-primary">Save</button>
                 <a href="/admin/users" class="btn btn-secondary ms-2">Back</a>
@@ -87,6 +83,15 @@
     <div class="card">
         <div class="card-body">
             <h5 class="card-title">Password Reset</h5>
+            @if (user.LastPasswordResetSentAt is not null)
+            {
+                <p class="text-muted mb-1">Last password reset sent: @user.LastPasswordResetSentAt.Value.ToLocalTime().ToString("MMM d, yyyy h:mm tt")</p>
+            }
+            else
+            {
+                <p class="text-muted mb-1">No password reset emails have been sent.</p>
+            }
+
             <form method="post" @formname="resetPassword" @onsubmit="SendResetEmailAsync">
                 <AntiforgeryToken />
                 <button type="submit" class="btn btn-warning">Send Password Reset Email</button>
@@ -96,6 +101,22 @@
             {
                 <div class="alert alert-success mt-3 mb-0">Password reset email sent to @user.Email.</div>
             }
+        </div>
+    </div>
+}
+
+@if (user is not null)
+{
+    <div class="card mt-4">
+        <div class="card-body">
+            <h5 class="card-title">Delete User</h5>
+            <form method="post" @formname="deleteUser" @onsubmit="DeleteUserAsync">
+                <AntiforgeryToken />
+                <button type="submit" class="btn btn-danger"
+                        onclick="return confirm('Are you sure you want to delete @user.FullName? This cannot be undone.')">
+                    Delete User
+                </button>
+            </form>
         </div>
     </div>
 }
@@ -110,16 +131,12 @@
     [SupplyParameterFromForm]
     private EditUserModel model { get; set; } = default!;
     private IList<string> currentRoles = [];
-    private bool isPresident;
     private string? message;
     private bool isError;
     private bool resetEmailSent;
 
     protected override async Task OnInitializedAsync()
     {
-        var authState = await AuthStateProvider.GetAuthenticationStateAsync();
-        isPresident = authState.User.IsInRole(Roles.President);
-
         user = await UserService.GetUserByIdAsync(UserId);
         if (user is null) return;
 
@@ -152,22 +169,19 @@
             return;
         }
 
-        if (isPresident)
-        {
-            var newRoles = new List<string> { Roles.Resident };
-            if (model.IsPresident) newRoles.Add(Roles.President);
-            if (model.IsTreasurer) newRoles.Add(Roles.Treasurer);
-            if (model.IsSecretary) newRoles.Add(Roles.Secretary);
+        var newRoles = new List<string> { Roles.Resident };
+        if (model.IsPresident) newRoles.Add(Roles.President);
+        if (model.IsTreasurer) newRoles.Add(Roles.Treasurer);
+        if (model.IsSecretary) newRoles.Add(Roles.Secretary);
 
-            var (roleSuccess, roleErrors) = await UserService.SetUserRolesAsync(user, newRoles);
-            if (!roleSuccess)
-            {
-                message = string.Join(", ", roleErrors);
-                isError = true;
-                return;
-            }
-            currentRoles = newRoles;
+        var (roleSuccess, roleErrors) = await UserService.SetUserRolesAsync(user, newRoles);
+        if (!roleSuccess)
+        {
+            message = string.Join(", ", roleErrors);
+            isError = true;
+            return;
         }
+        currentRoles = newRoles;
 
         var actorEmail = HttpContext.User.FindFirstValue(ClaimTypes.Email) ?? "unknown";
         var ip = HttpContext.Connection.RemoteIpAddress?.ToString();
@@ -197,6 +211,32 @@
         });
 
         resetEmailSent = true;
+    }
+
+    private async Task DeleteUserAsync()
+    {
+        if (user is null) return;
+
+        var targetEmail = user.Email ?? "";
+        var targetName = user.FullName;
+
+        var (success, errors) = await UserService.DeleteUserAsync(user);
+        if (!success)
+        {
+            message = string.Join(", ", errors);
+            isError = true;
+            return;
+        }
+
+        var actorEmail = HttpContext.User.FindFirstValue(ClaimTypes.Email) ?? "unknown";
+        var ip = HttpContext.Connection.RemoteIpAddress?.ToString();
+        await AuditService.LogAsync(AuditAction.DeleteUser, actorEmail, ip, new Dictionary<string, string>
+        {
+            ["TargetEmail"] = targetEmail,
+            ["TargetName"] = targetName
+        });
+
+        Nav.NavigateTo("/admin/users");
     }
 
     private sealed class EditUserModel
