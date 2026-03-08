@@ -1,10 +1,5 @@
 # Basic website for keeping records for the Claymont Estates HOA
 
-## Test User
-
-I created a test user admin@example.com Password12!!
-
-
 ## Setup
 
 The application environment can be set up using nix although this complicates running some of the commands.
