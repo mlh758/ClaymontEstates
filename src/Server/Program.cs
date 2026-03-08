@@ -53,9 +53,24 @@ builder.Services.AddAuthorizationBuilder()
 builder.Services.AddSingleton<IEmailSender<ApplicationUser>, IdentityNoOpEmailSender>();
 
 var emailConfig = builder.Configuration.GetSection("Email");
-builder.Services
-    .AddFluentEmail(emailConfig["FromAddress"], emailConfig["FromName"])
-    .AddSmtpSender(emailConfig["SmtpHost"]!, int.Parse(emailConfig["SmtpPort"]!));
+var fluentEmail = builder.Services
+    .AddFluentEmail(emailConfig["FromAddress"], emailConfig["FromName"]);
+
+if (builder.Environment.IsDevelopment())
+{
+    fluentEmail.AddSmtpSender(emailConfig["SmtpHost"]!, int.Parse(emailConfig["SmtpPort"]!));
+}
+else
+{
+    fluentEmail.AddSmtpSender(new System.Net.Mail.SmtpClient(emailConfig["SmtpHost"]!)
+    {
+        Port = int.Parse(emailConfig["SmtpPort"]!),
+        Credentials = new System.Net.NetworkCredential(
+            emailConfig["SmtpUsername"], emailConfig["SmtpPassword"]),
+        EnableSsl = true,
+        Timeout = 5000
+    });
+}
 
 builder.Services.AddRateLimiter(options =>
 {
@@ -111,9 +126,12 @@ app.MapGet("/api/documents/{id:int}/download", async (int id, DocumentService do
     return Results.File(path, document.ContentType, document.FileName);
 }).RequireAuthorization();
 
-// Seed roles on startup
+// Apply migrations and seed roles on startup
 using (var scope = app.Services.CreateScope())
 {
+    var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+    await db.Database.MigrateAsync();
+
     var userService = scope.ServiceProvider.GetRequiredService<UserService>();
     await userService.EnsureRolesAsync();
 }
