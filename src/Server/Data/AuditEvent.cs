@@ -14,7 +14,8 @@ public enum AuditAction
     DeleteDocument,
     CreateEvent,
     EditEvent,
-    DeleteEvent
+    DeleteEvent,
+    SendBulkEmail
 }
 
 public class AuditEvent

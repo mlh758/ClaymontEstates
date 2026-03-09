@@ -67,7 +67,7 @@ public class UserService(UserManager<ApplicationUser> userManager, RoleManager<I
     }
 
     public async Task<(bool Success, string[] Errors)> UpdateUserAsync(
-        ApplicationUser user, string fullName, string email, string phone, string streetAddress, bool showContactInfo)
+        ApplicationUser user, string fullName, string email, string phone, string streetAddress, bool showContactInfo, bool wantsEmailNotifications)
     {
         user.FullName = fullName;
         user.Email = email;
@@ -75,6 +75,7 @@ public class UserService(UserManager<ApplicationUser> userManager, RoleManager<I
         user.PhoneNumber = phone;
         user.StreetAddress = streetAddress;
         user.ShowContactInfo = showContactInfo;
+        user.WantsEmailNotifications = wantsEmailNotifications;
 
         var result = await userManager.UpdateAsync(user);
         return (result.Succeeded, result.Errors.Select(e => e.Description).ToArray());

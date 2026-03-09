@@ -1,0 +1,88 @@
+@page "/admin/emails/compose"
+@using System.Security.Claims
+@using System.ComponentModel.DataAnnotations
+@using Microsoft.AspNetCore.Authorization
+@using Server.Data
+@using Server.Services
+@attribute [Authorize(Policy = Roles.OfficerPolicy)]
+@rendermode InteractiveServer
+
+@inject BulkEmailService BulkEmailService
+@inject AuditService AuditService
+@inject AuthenticationStateProvider AuthStateProvider
+@inject NavigationManager Nav
+
+<PageTitle>Compose Bulk Email</PageTitle>
+
+<div class="card">
+    <div class="card-body">
+        <h1 class="card-title">Compose Bulk Email</h1>
+        <p class="text-muted">This email will be sent to all residents who have opted into email notifications.</p>
+
+        <EditForm Model="model" OnValidSubmit="SendAsync">
+            <DataAnnotationsValidator />
+            <ValidationSummary />
+
+            <div class="mb-3">
+                <label class="form-label" for="email-subject">Subject</label>
+                <InputText id="email-subject" class="form-control" @bind-Value="model.Subject" />
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Body</label>
+                <RadzenHtmlEditor @bind-Value="model.Body" style="height: 300px;">
+                    <RadzenHtmlEditorUndo />
+                    <RadzenHtmlEditorRedo />
+                    <RadzenHtmlEditorSeparator />
+                    <RadzenHtmlEditorBold />
+                    <RadzenHtmlEditorItalic />
+                    <RadzenHtmlEditorUnderline />
+                    <RadzenHtmlEditorStrikeThrough />
+                    <RadzenHtmlEditorSeparator />
+                    <RadzenHtmlEditorUnorderedList />
+                    <RadzenHtmlEditorOrderedList />
+                    <RadzenHtmlEditorSeparator />
+                    <RadzenHtmlEditorColor />
+                    <RadzenHtmlEditorSeparator />
+                    <RadzenHtmlEditorLink />
+                    <RadzenHtmlEditorUnlink />
+                    <RadzenHtmlEditorSeparator />
+                    <RadzenHtmlEditorSource />
+                </RadzenHtmlEditor>
+            </div>
+
+            <button type="submit" class="btn btn-primary">Send Email</button>
+            <a href="/admin/emails" class="btn btn-secondary ms-2">Cancel</a>
+        </EditForm>
+    </div>
+</div>
+
+@code {
+    private EmailModel model = new();
+
+    private async Task SendAsync()
+    {
+        var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+        var userId = authState.User.FindFirstValue(ClaimTypes.NameIdentifier)!;
+        var actorEmail = authState.User.FindFirstValue(ClaimTypes.Email) ?? "unknown";
+
+        var bulkEmail = await BulkEmailService.CreateAsync(model.Subject, model.Body ?? "", userId);
+
+        await AuditService.LogAsync(AuditAction.SendBulkEmail, actorEmail, null, new Dictionary<string, string>
+        {
+            ["Subject"] = bulkEmail.Subject,
+            ["RecipientCount"] = bulkEmail.Recipients.Count.ToString()
+        });
+
+        Nav.NavigateTo("/admin/emails");
+    }
+
+    private sealed class EmailModel
+    {
+        [Required]
+        [MaxLength(200)]
+        public string Subject { get; set; } = "";
+
+        public string? Body { get; set; } = "";
+    }
+}

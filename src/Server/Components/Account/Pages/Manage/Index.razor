@@ -48,6 +48,10 @@
                 <InputCheckbox @bind-Value="Input.ShowContactInfo" id="Input.ShowContactInfo" class="form-check-input" />
                 <label for="Input.ShowContactInfo" class="form-check-label">Show my email and phone in the directory</label>
             </div>
+            <div class="form-check mb-3">
+                <InputCheckbox @bind-Value="Input.WantsEmailNotifications" id="Input.WantsEmailNotifications" class="form-check-input" />
+                <label for="Input.WantsEmailNotifications" class="form-check-label">Receive community email notifications</label>
+            </div>
             <button type="submit" class="w-100 btn btn-lg btn-primary">Save</button>
         </EditForm>
     </div>
@@ -86,6 +90,7 @@
             Input.PhoneNumber = phoneNumber;
             Input.StreetAddress = user.StreetAddress;
             Input.ShowContactInfo = user.ShowContactInfo;
+            Input.WantsEmailNotifications = user.WantsEmailNotifications;
         }
     }
 
@@ -127,6 +132,12 @@
             changed = true;
         }
 
+        if (Input.WantsEmailNotifications != user.WantsEmailNotifications)
+        {
+            user.WantsEmailNotifications = Input.WantsEmailNotifications;
+            changed = true;
+        }
+
         if (changed)
         {
             var result = await UserManager.UpdateAsync(user);
@@ -155,5 +166,8 @@
 
         [Display(Name = "Show contact info")]
         public bool ShowContactInfo { get; set; } = true;
+
+        [Display(Name = "Receive email notifications")]
+        public bool WantsEmailNotifications { get; set; } = true;
     }
 }

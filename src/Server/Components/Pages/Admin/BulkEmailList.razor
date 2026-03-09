@@ -1,0 +1,76 @@
+@page "/admin/emails"
+@using Microsoft.AspNetCore.Authorization
+@using Server.Data
+@using Server.Services
+@attribute [Authorize(Policy = Roles.OfficerPolicy)]
+
+@inject BulkEmailService BulkEmailService
+
+<PageTitle>Bulk Emails</PageTitle>
+
+<div class="card">
+    <div class="card-body">
+        <h1 class="card-title">Bulk Emails</h1>
+
+        <a href="/admin/emails/compose" class="btn btn-primary mb-3">Compose Email</a>
+
+        @if (emails is null)
+        {
+            <p><em>Loading...</em></p>
+        }
+        else if (emails.Count == 0)
+        {
+            <p class="mb-0">No bulk emails sent yet.</p>
+        }
+        else
+        {
+            <RadzenTable>
+                <RadzenTableHeader>
+                    <RadzenTableHeaderRow>
+                        <RadzenTableHeaderCell>Subject</RadzenTableHeaderCell>
+                        <RadzenTableHeaderCell>Sent By</RadzenTableHeaderCell>
+                        <RadzenTableHeaderCell>Recipients</RadzenTableHeaderCell>
+                        <RadzenTableHeaderCell>Status</RadzenTableHeaderCell>
+                        <RadzenTableHeaderCell>Created</RadzenTableHeaderCell>
+                    </RadzenTableHeaderRow>
+                </RadzenTableHeader>
+                <RadzenTableBody>
+                    @foreach (var bulkEmail in emails)
+                    {
+                        var sent = bulkEmail.Recipients.Count(r => r.SentAt != null);
+                        var total = bulkEmail.Recipients.Count;
+                        <RadzenTableRow>
+                            <RadzenTableCell>@bulkEmail.Subject</RadzenTableCell>
+                            <RadzenTableCell>@bulkEmail.Sender.FullName</RadzenTableCell>
+                            <RadzenTableCell>@sent / @total</RadzenTableCell>
+                            <RadzenTableCell>
+                                @if (bulkEmail.CompletedAt is not null)
+                                {
+                                    <RadzenBadge BadgeStyle="BadgeStyle.Success" Text="Complete" />
+                                }
+                                else if (bulkEmail.StartedAt is not null)
+                                {
+                                    <RadzenBadge BadgeStyle="BadgeStyle.Info" Text="Sending" />
+                                }
+                                else
+                                {
+                                    <RadzenBadge BadgeStyle="BadgeStyle.Light" Text="Queued" />
+                                }
+                            </RadzenTableCell>
+                            <RadzenTableCell>@bulkEmail.CreatedAt.ToLocalTime().ToString("MMM d, yyyy h:mm tt")</RadzenTableCell>
+                        </RadzenTableRow>
+                    }
+                </RadzenTableBody>
+            </RadzenTable>
+        }
+    </div>
+</div>
+
+@code {
+    private List<BulkEmail>? emails;
+
+    protected override async Task OnInitializedAsync()
+    {
+        emails = await BulkEmailService.GetAllAsync();
+    }
+}

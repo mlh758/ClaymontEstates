@@ -18,13 +18,13 @@
     <nav class="nav">
         <div class="nav-item">
             <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
-                <span class="bi bi-house-door-fill-nav-menu" aria-hidden="true"></span> Home
+                <RadzenIcon Icon="home" class="nav-icon" /> Home
             </NavLink>
         </div>
 
         <div class="nav-item">
             <NavLink class="nav-link" href="about">
-                <span class="bi bi-info-circle-nav-menu" aria-hidden="true"></span> About
+                <RadzenIcon Icon="info" class="nav-icon" /> About
             </NavLink>
         </div>
 
@@ -32,19 +32,19 @@
             <Authorized>
                 <div class="nav-item">
                     <NavLink class="nav-link" href="directory">
-                        <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> Directory
+                        <RadzenIcon Icon="contacts" class="nav-icon" /> Directory
                     </NavLink>
                 </div>
 
                 <div class="nav-item">
                     <NavLink class="nav-link" href="documents">
-                        <span class="bi bi-folder-nav-menu" aria-hidden="true"></span> Documents
+                        <RadzenIcon Icon="folder" class="nav-icon" /> Documents
                     </NavLink>
                 </div>
 
                 <div class="nav-item">
                     <NavLink class="nav-link" href="events">
-                        <span class="bi bi-calendar-nav-menu" aria-hidden="true"></span> Events
+                        <RadzenIcon Icon="event" class="nav-icon" /> Events
                     </NavLink>
                 </div>
 
@@ -52,12 +52,17 @@
                     <Authorized Context="adminContext">
                         <div class="nav-item">
                             <NavLink class="nav-link" href="admin/users">
-                                <span class="bi bi-person-badge-nav-menu" aria-hidden="true"></span> Manage Users
+                                <RadzenIcon Icon="manage_accounts" class="nav-icon" /> Manage Users
                             </NavLink>
                         </div>
                         <div class="nav-item">
                             <NavLink class="nav-link" href="admin/events">
-                                <span class="bi bi-calendar-nav-menu" aria-hidden="true"></span> Manage Events
+                                <RadzenIcon Icon="edit_calendar" class="nav-icon" /> Manage Events
+                            </NavLink>
+                        </div>
+                        <div class="nav-item">
+                            <NavLink class="nav-link" href="admin/emails">
+                                <RadzenIcon Icon="mail" class="nav-icon" /> Bulk Emails
                             </NavLink>
                         </div>
                     </Authorized>
@@ -65,7 +70,7 @@
 
                 <div class="nav-item">
                     <NavLink class="nav-link" href="Account/Manage">
-                        <span class="bi bi-person-nav-menu" aria-hidden="true"></span> @context.User.Identity?.Name
+                        <RadzenIcon Icon="person" class="nav-icon" /> @context.User.Identity?.Name
                     </NavLink>
                 </div>
                 <div class="nav-item">
@@ -73,7 +78,7 @@
                         <AntiforgeryToken />
                         <input type="hidden" name="ReturnUrl" value="@currentUrl" />
                         <button type="submit" class="nav-link">
-                            <span class="bi bi-arrow-bar-left-nav-menu" aria-hidden="true"></span> Logout
+                            <RadzenIcon Icon="logout" class="nav-icon" /> Logout
                         </button>
                     </form>
                 </div>
@@ -81,7 +86,7 @@
             <NotAuthorized>
                 <div class="nav-item">
                     <NavLink class="nav-link" href="Account/Login">
-                        <span class="bi bi-person-badge-nav-menu" aria-hidden="true"></span> Login
+                        <RadzenIcon Icon="login" class="nav-icon" /> Login
                     </NavLink>
                 </div>
             </NotAuthorized>

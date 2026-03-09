@@ -10,7 +10,9 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
         IdentityRoleClaim<string>, IdentityUserToken<string>>(options)
 {
     public DbSet<AuditEvent> AuditEvents => Set<AuditEvent>();
+    public DbSet<BulkEmail> BulkEmails => Set<BulkEmail>();
     public DbSet<Document> Documents => Set<Document>();
+    public DbSet<EmailRecipient> EmailRecipients => Set<EmailRecipient>();
     public DbSet<Event> Events => Set<Event>();
     public DbSet<Rsvp> Rsvps => Set<Rsvp>();
 
@@ -33,6 +35,27 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
         {
             entity.HasIndex(a => a.Timestamp);
             entity.Property(a => a.Action).HasConversion<string>();
+        });
+
+        builder.Entity<BulkEmail>(entity =>
+        {
+            entity.HasOne(b => b.Sender)
+                .WithMany()
+                .HasForeignKey(b => b.SenderId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        builder.Entity<EmailRecipient>(entity =>
+        {
+            entity.HasOne(r => r.BulkEmail)
+                .WithMany(b => b.Recipients)
+                .HasForeignKey(r => r.BulkEmailId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne(r => r.User)
+                .WithMany()
+                .HasForeignKey(r => r.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
         });
 
         builder.Entity<Rsvp>(entity =>

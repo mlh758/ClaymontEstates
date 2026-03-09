@@ -15,6 +15,8 @@ public class ApplicationUser : IdentityUser
 
     public bool ShowContactInfo { get; set; } = true;
 
+    public bool WantsEmailNotifications { get; set; } = true;
+
     public DateTime? LastPasswordResetSentAt { get; set; }
 
     public virtual ICollection<ApplicationUserRole> UserRoles { get; set; } = [];

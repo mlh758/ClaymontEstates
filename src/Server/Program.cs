@@ -47,7 +47,9 @@ builder.Services.AddScoped<UserService>();
 builder.Services.AddScoped<DocumentService>();
 builder.Services.AddScoped<EventService>();
 builder.Services.AddScoped<AuditService>();
+builder.Services.AddScoped<BulkEmailService>();
 builder.Services.AddSingleton<HtmlSanitizationService>();
+builder.Services.AddHostedService<BulkEmailBackgroundService>();
 
 builder.Services.AddAuthorizationBuilder()
     .AddPolicy(Roles.OfficerPolicy, policy =>

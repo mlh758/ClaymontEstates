@@ -31,43 +31,48 @@
                 <ValidationSummary />
 
                 <div class="mb-3">
-                    <label class="form-label">Full Name</label>
-                    <InputText class="form-control" @bind-Value="model.FullName" />
+                    <label class="form-label" for="edit-fullname">Full Name</label>
+                    <InputText id="edit-fullname" class="form-control" @bind-Value="model.FullName" />
                 </div>
 
                 <div class="mb-3">
-                    <label class="form-label">Email</label>
-                    <InputText class="form-control" @bind-Value="model.Email" />
+                    <label class="form-label" for="edit-email">Email</label>
+                    <InputText id="edit-email" class="form-control" @bind-Value="model.Email" />
                 </div>
 
                 <div class="mb-3">
-                    <label class="form-label">Phone</label>
-                    <InputText class="form-control" @bind-Value="model.Phone" />
+                    <label class="form-label" for="edit-phone">Phone</label>
+                    <InputText type="tel" id="edit-phone" class="form-control" @bind-Value="model.Phone" />
                 </div>
 
                 <div class="mb-3">
-                    <label class="form-label">Street Address</label>
-                    <InputText class="form-control" @bind-Value="model.StreetAddress" />
+                    <label class="form-label" for="edit-address">Street Address</label>
+                    <InputText id="edit-address" class="form-control" @bind-Value="model.StreetAddress" />
                 </div>
 
                 <div class="mb-3 form-check">
-                    <InputCheckbox class="form-check-input" @bind-Value="model.ShowContactInfo" />
-                    <label class="form-check-label">Show email and phone in directory</label>
+                    <InputCheckbox id="edit-show-contact" class="form-check-input" @bind-Value="model.ShowContactInfo" />
+                    <label class="form-check-label" for="edit-show-contact">Show email and phone in directory</label>
+                </div>
+
+                <div class="mb-3 form-check">
+                    <InputCheckbox id="edit-wants-email" class="form-check-input" @bind-Value="model.WantsEmailNotifications" />
+                    <label class="form-check-label" for="edit-wants-email">Receive community email notifications</label>
                 </div>
 
                 <div class="mb-3">
                     <label class="form-label">Roles</label>
                     <div class="form-check">
-                        <InputCheckbox class="form-check-input" @bind-Value="model.IsPresident" />
-                        <label class="form-check-label">President</label>
+                        <InputCheckbox id="edit-role-president" class="form-check-input" @bind-Value="model.IsPresident" />
+                        <label class="form-check-label" for="edit-role-president">President</label>
                     </div>
                     <div class="form-check">
-                        <InputCheckbox class="form-check-input" @bind-Value="model.IsTreasurer" />
-                        <label class="form-check-label">Treasurer</label>
+                        <InputCheckbox id="edit-role-treasurer" class="form-check-input" @bind-Value="model.IsTreasurer" />
+                        <label class="form-check-label" for="edit-role-treasurer">Treasurer</label>
                     </div>
                     <div class="form-check">
-                        <InputCheckbox class="form-check-input" @bind-Value="model.IsSecretary" />
-                        <label class="form-check-label">Secretary</label>
+                        <InputCheckbox id="edit-role-secretary" class="form-check-input" @bind-Value="model.IsSecretary" />
+                        <label class="form-check-label" for="edit-role-secretary">Secretary</label>
                     </div>
                 </div>
 
@@ -149,6 +154,7 @@
             Phone = user.PhoneNumber ?? "",
             StreetAddress = user.StreetAddress,
             ShowContactInfo = user.ShowContactInfo,
+            WantsEmailNotifications = user.WantsEmailNotifications,
             IsPresident = currentRoles.Contains(Roles.President),
             IsTreasurer = currentRoles.Contains(Roles.Treasurer),
             IsSecretary = currentRoles.Contains(Roles.Secretary)
@@ -160,7 +166,7 @@
         if (user is null) return;
 
         var (success, errors) = await UserService.UpdateUserAsync(
-            user, model.FullName, model.Email, model.Phone, model.StreetAddress, model.ShowContactInfo);
+            user, model.FullName, model.Email, model.Phone, model.StreetAddress, model.ShowContactInfo, model.WantsEmailNotifications);
 
         if (!success)
         {
@@ -254,6 +260,7 @@
         public string StreetAddress { get; set; } = "";
 
         public bool ShowContactInfo { get; set; } = true;
+        public bool WantsEmailNotifications { get; set; } = true;
         public bool IsPresident { get; set; }
         public bool IsTreasurer { get; set; }
         public bool IsSecretary { get; set; }
