@@ -1,5 +1,4 @@
 using System.Text;
-using FluentEmail.Core;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.EntityFrameworkCore;
@@ -7,7 +6,7 @@ using Server.Data;
 
 namespace Server.Services;
 
-public class UserService(UserManager<ApplicationUser> userManager, RoleManager<IdentityRole> roleManager, ApplicationDbContext db, IFluentEmail email)
+public class UserService(UserManager<ApplicationUser> userManager, RoleManager<IdentityRole> roleManager, ApplicationDbContext db, EmailOutboxService outbox)
 {
     private IQueryable<ApplicationUser> UsersWithRoles => db.Users
         .Include(u => u.UserRoles).ThenInclude(ur => ur.Role);
@@ -131,11 +130,7 @@ public class UserService(UserManager<ApplicationUser> userManager, RoleManager<I
               <p>If you did not request this, you can safely ignore it.</p>
               """;
 
-        await email
-            .To(user.Email!)
-            .Subject(subject)
-            .Body(body, isHtml: true)
-            .SendAsync();
+        await outbox.QueueAsync(new EmailMessage(user.Email!, subject, body));
 
         user.LastPasswordResetSentAt = DateTime.UtcNow;
         await userManager.UpdateAsync(user);

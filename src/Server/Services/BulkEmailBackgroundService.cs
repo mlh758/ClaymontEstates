@@ -1,11 +1,18 @@
 using FluentEmail.Core;
 using Microsoft.EntityFrameworkCore;
+using Polly;
+using Polly.Registry;
 using Server.Data;
 
 namespace Server.Services;
 
-public class BulkEmailBackgroundService(IServiceScopeFactory scopeFactory, ILogger<BulkEmailBackgroundService> logger) : BackgroundService
+public class BulkEmailBackgroundService(
+    IServiceScopeFactory scopeFactory,
+    ResiliencePipelineProvider<string> pipelineProvider,
+    ILogger<BulkEmailBackgroundService> logger) : BackgroundService
 {
+    private readonly ResiliencePipeline _pipeline = pipelineProvider.GetPipeline("email-smtp");
+
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         while (!stoppingToken.IsCancellationRequested)
@@ -58,26 +65,32 @@ public class BulkEmailBackgroundService(IServiceScopeFactory scopeFactory, ILogg
 
                 try
                 {
-                    var email = emailFactory.Create()
-                        .To(recipient.User.Email)
-                        .Subject(bulkEmail.Subject)
-                        .Body(bulkEmail.Body, isHtml: true);
-
-                    if (bulkEmail.Sender?.Email is not null)
+                    await _pipeline.ExecuteAsync(async token =>
                     {
-                        email.ReplyTo(bulkEmail.Sender.Email);
-                    }
+                        var email = emailFactory.Create()
+                            .To(recipient.User.Email)
+                            .Subject(bulkEmail.Subject)
+                            .Body(bulkEmail.Body, isHtml: true);
 
-                    await email.SendAsync(ct);
+                        if (bulkEmail.Sender?.Email is not null)
+                        {
+                            email.ReplyTo(bulkEmail.Sender.Email);
+                        }
+
+                        var response = await email.SendAsync(token);
+                        if (!response.Successful)
+                            throw new InvalidOperationException(
+                                $"Email send failed: {string.Join(", ", response.ErrorMessages)}");
+                    }, ct);
 
                     recipient.SentAt = DateTime.UtcNow;
                     await db.SaveChangesAsync(ct);
                 }
-                catch (Exception ex)
+                catch (Exception ex) when (ex is not OperationCanceledException)
                 {
                     recipient.FailedAt = DateTime.UtcNow;
                     await db.SaveChangesAsync(ct);
-                    logger.LogError(ex, "Failed to send bulk email {BulkEmailId} to {Email}",
+                    logger.LogError(ex, "Failed to send bulk email {BulkEmailId} to {Email} after retries",
                         bulkEmail.Id, recipient.User.Email);
                 }
             }

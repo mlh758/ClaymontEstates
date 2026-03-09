@@ -6,6 +6,7 @@ using Microsoft.EntityFrameworkCore;
 using Server.Components;
 using Server.Components.Account;
 using Server.Data;
+using Polly;
 using Radzen;
 using Server.Services;
 
@@ -55,6 +56,18 @@ builder.Services.AddScoped<AuditService>();
 builder.Services.AddScoped<BulkEmailService>();
 builder.Services.AddScoped<EmergencyContactService>();
 builder.Services.AddSingleton<HtmlSanitizationService>();
+builder.Services.AddSingleton<EmailOutboxService>();
+builder.Services.AddResiliencePipeline("email-smtp", builder =>
+{
+    builder.AddRetry(new Polly.Retry.RetryStrategyOptions
+    {
+        MaxRetryAttempts = 5,
+        BackoffType = DelayBackoffType.Exponential,
+        Delay = TimeSpan.FromSeconds(5),
+        MaxDelay = TimeSpan.FromMinutes(1),
+    });
+});
+builder.Services.AddHostedService<EmailOutboxBackgroundService>();
 builder.Services.AddHostedService<BulkEmailBackgroundService>();
 
 builder.Services.AddAuthorizationBuilder()
