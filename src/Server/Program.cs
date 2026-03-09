@@ -48,6 +48,7 @@ builder.Services.AddScoped<DocumentService>();
 builder.Services.AddScoped<EventService>();
 builder.Services.AddScoped<AuditService>();
 builder.Services.AddScoped<BulkEmailService>();
+builder.Services.AddScoped<EmergencyContactService>();
 builder.Services.AddSingleton<HtmlSanitizationService>();
 builder.Services.AddHostedService<BulkEmailBackgroundService>();
 

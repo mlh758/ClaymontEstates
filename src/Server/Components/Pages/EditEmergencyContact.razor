@@ -1,0 +1,177 @@
+@page "/emergency-contacts/edit/{ContactId:int}"
+@using System.Security.Claims
+@using System.ComponentModel.DataAnnotations
+@using Microsoft.AspNetCore.Authorization
+@using Server.Data
+@using Server.Services
+@attribute [Authorize]
+@rendermode InteractiveServer
+
+@inject EmergencyContactService ContactService
+@inject AuditService AuditService
+@inject AuthenticationStateProvider AuthStateProvider
+@inject NavigationManager Nav
+
+<PageTitle>Edit Emergency Contact</PageTitle>
+
+@if (notFound)
+{
+    <p>Contact not found.</p>
+}
+else if (accessDenied)
+{
+    <p>You do not have permission to view this contact.</p>
+}
+else if (contact is null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <div class="card mb-4">
+        <div class="card-body">
+            <h1 class="card-title">Edit Emergency Contact</h1>
+
+            @if (isOfficerEditing)
+            {
+                <p class="text-muted">Editing on behalf of @contact.User.FullName</p>
+            }
+
+            @if (!string.IsNullOrEmpty(message))
+            {
+                <RadzenAlert AlertStyle="@(isError ? AlertStyle.Danger : AlertStyle.Success)" AllowClose="false" ShowIcon="false">@message</RadzenAlert>
+            }
+
+            <EditForm Model="model" OnValidSubmit="SaveAsync">
+                <DataAnnotationsValidator />
+                <ValidationSummary />
+
+                <div class="mb-3">
+                    <label class="form-label" for="contact-name">Name</label>
+                    <InputText id="contact-name" class="form-control" @bind-Value="model.Name" />
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label" for="contact-phone">Phone Number</label>
+                    <InputText id="contact-phone" type="tel" class="form-control" @bind-Value="model.PhoneNumber" />
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label" for="contact-email">Email</label>
+                    <InputText id="contact-email" type="email" class="form-control" @bind-Value="model.Email" />
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label" for="contact-address">Address</label>
+                    <InputText id="contact-address" class="form-control" @bind-Value="model.Address" />
+                </div>
+
+                <button type="submit" class="btn btn-primary">Save</button>
+                <a href="@backUrl" class="btn btn-secondary ms-2">Back</a>
+            </EditForm>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-body">
+            <button class="btn btn-danger" @onclick="DeleteAsync">Delete Contact</button>
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter] public int ContactId { get; set; }
+
+    private EmergencyContact? contact;
+    private ContactModel model = new();
+    private string? message;
+    private bool isError;
+    private bool notFound;
+    private bool accessDenied;
+    private bool isOfficerEditing;
+    private string backUrl = "/emergency-contacts";
+
+    protected override async Task OnInitializedAsync()
+    {
+        contact = await ContactService.GetByIdAsync(ContactId);
+        if (contact is null)
+        {
+            notFound = true;
+            return;
+        }
+
+        var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+        var userId = authState.User.FindFirstValue(ClaimTypes.NameIdentifier);
+        var isOfficer = authState.User.IsInRole(Roles.President)
+            || authState.User.IsInRole(Roles.Treasurer)
+            || authState.User.IsInRole(Roles.Secretary);
+
+        if (contact.UserId != userId && !isOfficer)
+        {
+            accessDenied = true;
+            return;
+        }
+
+        isOfficerEditing = contact.UserId != userId;
+        if (isOfficerEditing)
+            backUrl = $"/admin/emergency-contacts/{contact.UserId}";
+
+        model = new ContactModel
+        {
+            Name = contact.Name,
+            PhoneNumber = contact.PhoneNumber,
+            Email = contact.Email,
+            Address = contact.Address
+        };
+    }
+
+    private async Task SaveAsync()
+    {
+        if (contact is null) return;
+
+        await ContactService.UpdateAsync(contact, model.Name, model.PhoneNumber, model.Email, model.Address);
+
+        var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+        var actorEmail = authState.User.FindFirstValue(ClaimTypes.Email) ?? "unknown";
+        await AuditService.LogAsync(AuditAction.EditEmergencyContact, actorEmail, null, new Dictionary<string, string>
+        {
+            ["ContactId"] = ContactId.ToString(),
+            ["ContactName"] = model.Name
+        });
+
+        message = "Contact saved.";
+        isError = false;
+    }
+
+    private async Task DeleteAsync()
+    {
+        if (contact is null) return;
+
+        var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+        var actorEmail = authState.User.FindFirstValue(ClaimTypes.Email) ?? "unknown";
+        await AuditService.LogAsync(AuditAction.DeleteEmergencyContact, actorEmail, null, new Dictionary<string, string>
+        {
+            ["ContactId"] = ContactId.ToString(),
+            ["ContactName"] = contact.Name
+        });
+
+        await ContactService.DeleteAsync(ContactId);
+        Nav.NavigateTo(backUrl);
+    }
+
+    private sealed class ContactModel
+    {
+        [Required]
+        [MaxLength(100)]
+        public string Name { get; set; } = "";
+
+        [MaxLength(20)]
+        public string? PhoneNumber { get; set; }
+
+        [MaxLength(256)]
+        public string? Email { get; set; }
+
+        [MaxLength(200)]
+        public string? Address { get; set; }
+    }
+}

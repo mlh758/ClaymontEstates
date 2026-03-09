@@ -1,0 +1,53 @@
+@page "/admin/emergency-contacts"
+@using Microsoft.AspNetCore.Authorization
+@using Server.Data
+@using Server.Services
+@attribute [Authorize(Policy = Roles.OfficerPolicy)]
+
+@inject UserService UserService
+
+<PageTitle>Manage Emergency Contacts</PageTitle>
+
+<div class="card">
+    <div class="card-body">
+        <h1 class="card-title">Manage Emergency Contacts</h1>
+
+        @if (users is null)
+        {
+            <p><em>Loading...</em></p>
+        }
+        else
+        {
+            <RadzenTable>
+                <RadzenTableHeader>
+                    <RadzenTableHeaderRow>
+                        <RadzenTableHeaderCell>Name</RadzenTableHeaderCell>
+                        <RadzenTableHeaderCell>Address</RadzenTableHeaderCell>
+                        <RadzenTableHeaderCell></RadzenTableHeaderCell>
+                    </RadzenTableHeaderRow>
+                </RadzenTableHeader>
+                <RadzenTableBody>
+                    @foreach (var user in users)
+                    {
+                        <RadzenTableRow>
+                            <RadzenTableCell>@user.FullName</RadzenTableCell>
+                            <RadzenTableCell>@user.StreetAddress</RadzenTableCell>
+                            <RadzenTableCell>
+                                <a href="/admin/emergency-contacts/@user.Id" class="btn btn-sm btn-outline-secondary">Manage</a>
+                            </RadzenTableCell>
+                        </RadzenTableRow>
+                    }
+                </RadzenTableBody>
+            </RadzenTable>
+        }
+    </div>
+</div>
+
+@code {
+    private List<ApplicationUser>? users;
+
+    protected override async Task OnInitializedAsync()
+    {
+        users = await UserService.GetAllUsersWithRolesAsync();
+    }
+}

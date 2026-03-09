@@ -15,7 +15,10 @@ public enum AuditAction
     CreateEvent,
     EditEvent,
     DeleteEvent,
-    SendBulkEmail
+    SendBulkEmail,
+    CreateEmergencyContact,
+    EditEmergencyContact,
+    DeleteEmergencyContact
 }
 
 public class AuditEvent

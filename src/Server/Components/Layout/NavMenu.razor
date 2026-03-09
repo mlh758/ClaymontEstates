@@ -48,6 +48,12 @@
                     </NavLink>
                 </div>
 
+                <div class="nav-item">
+                    <NavLink class="nav-link" href="emergency-contacts">
+                        <RadzenIcon Icon="emergency" class="nav-icon" /> My Emergency Contacts
+                    </NavLink>
+                </div>
+
                 <AuthorizeView Policy="@Roles.OfficerPolicy">
                     <Authorized Context="adminContext">
                         <div class="nav-item">
@@ -63,6 +69,11 @@
                         <div class="nav-item">
                             <NavLink class="nav-link" href="admin/emails">
                                 <RadzenIcon Icon="mail" class="nav-icon" /> Bulk Emails
+                            </NavLink>
+                        </div>
+                        <div class="nav-item">
+                            <NavLink class="nav-link" href="admin/emergency-contacts">
+                                <RadzenIcon Icon="emergency" class="nav-icon" /> Manage Emergency Contacts
                             </NavLink>
                         </div>
                     </Authorized>

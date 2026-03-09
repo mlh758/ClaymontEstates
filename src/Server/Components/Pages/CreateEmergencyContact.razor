@@ -1,0 +1,89 @@
+@page "/emergency-contacts/create"
+@using System.Security.Claims
+@using System.ComponentModel.DataAnnotations
+@using Microsoft.AspNetCore.Authorization
+@using Server.Data
+@using Server.Services
+@attribute [Authorize]
+
+@inject EmergencyContactService ContactService
+@inject AuditService AuditService
+@inject AuthenticationStateProvider AuthStateProvider
+@inject NavigationManager Nav
+
+<PageTitle>Add Emergency Contact</PageTitle>
+
+<div class="card">
+    <div class="card-body">
+        <h1 class="card-title">Add Emergency Contact</h1>
+
+        <EditForm Model="model" OnValidSubmit="CreateAsync" FormName="CreateEmergencyContact">
+            <DataAnnotationsValidator />
+            <ValidationSummary />
+
+            <div class="mb-3">
+                <label class="form-label" for="contact-name">Name</label>
+                <InputText id="contact-name" class="form-control" @bind-Value="model.Name" />
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label" for="contact-phone">Phone Number</label>
+                <InputText id="contact-phone" type="tel" class="form-control" @bind-Value="model.PhoneNumber" />
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label" for="contact-email">Email</label>
+                <InputText id="contact-email" type="email" class="form-control" @bind-Value="model.Email" />
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label" for="contact-address">Address</label>
+                <InputText id="contact-address" class="form-control" @bind-Value="model.Address" />
+            </div>
+
+            <button type="submit" class="btn btn-primary">Create</button>
+            <a href="/emergency-contacts" class="btn btn-secondary ms-2">Cancel</a>
+        </EditForm>
+    </div>
+</div>
+
+@code {
+    [SupplyParameterFromForm]
+    private ContactModel? model { get; set; }
+
+    protected override void OnInitialized() => model ??= new();
+
+    private async Task CreateAsync()
+    {
+        var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+        var userId = authState.User.FindFirstValue(ClaimTypes.NameIdentifier);
+        var actorEmail = authState.User.FindFirstValue(ClaimTypes.Email) ?? "unknown";
+        if (userId is null) return;
+
+        var contact = await ContactService.CreateAsync(userId, model!.Name, model.PhoneNumber, model.Email, model.Address);
+
+        await AuditService.LogAsync(AuditAction.CreateEmergencyContact, actorEmail, null, new Dictionary<string, string>
+        {
+            ["ContactId"] = contact.Id.ToString(),
+            ["ContactName"] = model.Name
+        });
+
+        Nav.NavigateTo("/emergency-contacts");
+    }
+
+    private sealed class ContactModel
+    {
+        [Required]
+        [MaxLength(100)]
+        public string Name { get; set; } = "";
+
+        [MaxLength(20)]
+        public string? PhoneNumber { get; set; }
+
+        [MaxLength(256)]
+        public string? Email { get; set; }
+
+        [MaxLength(200)]
+        public string? Address { get; set; }
+    }
+}

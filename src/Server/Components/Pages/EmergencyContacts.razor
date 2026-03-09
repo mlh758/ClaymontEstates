@@ -1,0 +1,106 @@
+@page "/emergency-contacts"
+@page "/admin/emergency-contacts/{UserId}"
+@using System.Security.Claims
+@using Microsoft.AspNetCore.Authorization
+@using Server.Data
+@using Server.Services
+@attribute [Authorize]
+
+@inject EmergencyContactService ContactService
+@inject UserService UserService
+@inject AuthenticationStateProvider AuthStateProvider
+
+<PageTitle>@(isAdminView ? $"Emergency Contacts - {targetUser?.FullName}" : "My Emergency Contacts")</PageTitle>
+
+<div class="card">
+    <div class="card-body">
+        @if (isAdminView && targetUser is not null)
+        {
+            <h1 class="card-title">Emergency Contacts</h1>
+            <p class="text-muted">For @targetUser.FullName (@targetUser.StreetAddress)</p>
+        }
+        else
+        {
+            <h1 class="card-title">My Emergency Contacts</h1>
+        }
+
+        <a href="@createUrl" class="btn btn-primary mb-3">Add Emergency Contact</a>
+
+        @if (contacts is null)
+        {
+            <p><em>Loading...</em></p>
+        }
+        else if (contacts.Count == 0)
+        {
+            <p class="mb-0">No emergency contacts on file.</p>
+        }
+        else
+        {
+            <RadzenTable>
+                <RadzenTableHeader>
+                    <RadzenTableHeaderRow>
+                        <RadzenTableHeaderCell>Name</RadzenTableHeaderCell>
+                        <RadzenTableHeaderCell>Phone</RadzenTableHeaderCell>
+                        <RadzenTableHeaderCell>Email</RadzenTableHeaderCell>
+                        <RadzenTableHeaderCell></RadzenTableHeaderCell>
+                    </RadzenTableHeaderRow>
+                </RadzenTableHeader>
+                <RadzenTableBody>
+                    @foreach (var contact in contacts)
+                    {
+                        <RadzenTableRow>
+                            <RadzenTableCell>@contact.Name</RadzenTableCell>
+                            <RadzenTableCell>@contact.PhoneNumber</RadzenTableCell>
+                            <RadzenTableCell>@contact.Email</RadzenTableCell>
+                            <RadzenTableCell>
+                                <a href="/emergency-contacts/edit/@contact.Id" class="btn btn-sm btn-outline-secondary">Edit</a>
+                            </RadzenTableCell>
+                        </RadzenTableRow>
+                    }
+                </RadzenTableBody>
+            </RadzenTable>
+        }
+
+        @if (isAdminView)
+        {
+            <a href="/admin/emergency-contacts" class="btn btn-secondary mt-3">Back to All Residents</a>
+        }
+    </div>
+</div>
+
+@code {
+    [Parameter] public string? UserId { get; set; }
+
+    private List<EmergencyContact>? contacts;
+    private ApplicationUser? targetUser;
+    private bool isAdminView;
+    private string createUrl = "/emergency-contacts/create";
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+
+        if (UserId is not null)
+        {
+            // Admin route — verify caller is an officer
+            var isOfficer = authState.User.IsInRole(Roles.President)
+                || authState.User.IsInRole(Roles.Treasurer)
+                || authState.User.IsInRole(Roles.Secretary);
+            if (!isOfficer) return;
+
+            isAdminView = true;
+            targetUser = await UserService.GetUserByIdAsync(UserId);
+            if (targetUser is null) return;
+
+            contacts = await ContactService.GetByUserIdAsync(UserId);
+            createUrl = $"/admin/emergency-contacts/create/{UserId}";
+        }
+        else
+        {
+            var currentUserId = authState.User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (currentUserId is null) return;
+
+            contacts = await ContactService.GetByUserIdAsync(currentUserId);
+        }
+    }
+}

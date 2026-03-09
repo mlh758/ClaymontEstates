@@ -14,6 +14,7 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
     public DbSet<Document> Documents => Set<Document>();
     public DbSet<EmailRecipient> EmailRecipients => Set<EmailRecipient>();
     public DbSet<Event> Events => Set<Event>();
+    public DbSet<EmergencyContact> EmergencyContacts => Set<EmergencyContact>();
     public DbSet<Rsvp> Rsvps => Set<Rsvp>();
 
     protected override void OnModelCreating(ModelBuilder builder)
@@ -55,6 +56,14 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
             entity.HasOne(r => r.User)
                 .WithMany()
                 .HasForeignKey(r => r.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        builder.Entity<EmergencyContact>(entity =>
+        {
+            entity.HasOne(ec => ec.User)
+                .WithMany()
+                .HasForeignKey(ec => ec.UserId)
                 .OnDelete(DeleteBehavior.Cascade);
         });
 
