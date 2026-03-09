@@ -1,0 +1,78 @@
+@page "/admin/emails/{Id:int}"
+@using Microsoft.AspNetCore.Authorization
+@using Server.Data
+@using Server.Services
+@attribute [Authorize(Policy = Roles.OfficerPolicy)]
+
+@inject BulkEmailService BulkEmailService
+@inject HtmlSanitizationService Sanitizer
+
+<PageTitle>View Bulk Email</PageTitle>
+
+<div class="card">
+    <div class="card-body">
+        @if (bulkEmail is null)
+        {
+            <p><em>Email not found.</em></p>
+        }
+        else
+        {
+            <h1 class="card-title">@bulkEmail.Subject</h1>
+
+            <div class="text-muted mb-3">
+                Sent by @bulkEmail.Sender.FullName on @bulkEmail.CreatedAt.ToLocalTime().ToString("MMM d, yyyy h:mm tt")
+            </div>
+
+            <div class="mb-4">
+                @((MarkupString)Sanitizer.Sanitize(bulkEmail.Body))
+            </div>
+
+            <h5>Recipients</h5>
+            <RadzenTable>
+                <RadzenTableHeader>
+                    <RadzenTableHeaderRow>
+                        <RadzenTableHeaderCell>Name</RadzenTableHeaderCell>
+                        <RadzenTableHeaderCell>Email</RadzenTableHeaderCell>
+                        <RadzenTableHeaderCell>Status</RadzenTableHeaderCell>
+                    </RadzenTableHeaderRow>
+                </RadzenTableHeader>
+                <RadzenTableBody>
+                    @foreach (var recipient in bulkEmail.Recipients)
+                    {
+                        <RadzenTableRow>
+                            <RadzenTableCell>@recipient.User.FullName</RadzenTableCell>
+                            <RadzenTableCell>@recipient.User.Email</RadzenTableCell>
+                            <RadzenTableCell>
+                                @if (recipient.SentAt is not null)
+                                {
+                                    <RadzenBadge BadgeStyle="BadgeStyle.Success" Text="@($"Sent {recipient.SentAt.Value.ToLocalTime():MMM d, h:mm tt}")" />
+                                }
+                                else if (recipient.FailedAt is not null)
+                                {
+                                    <RadzenBadge BadgeStyle="BadgeStyle.Danger" Text="@($"Failed {recipient.FailedAt.Value.ToLocalTime():MMM d, h:mm tt}")" />
+                                }
+                                else
+                                {
+                                    <RadzenBadge BadgeStyle="BadgeStyle.Light" Text="Pending" />
+                                }
+                            </RadzenTableCell>
+                        </RadzenTableRow>
+                    }
+                </RadzenTableBody>
+            </RadzenTable>
+        }
+
+        <a href="/admin/emails" class="btn btn-secondary mt-3">Back to Emails</a>
+    </div>
+</div>
+
+@code {
+    [Parameter] public int Id { get; set; }
+
+    private BulkEmail? bulkEmail;
+
+    protected override async Task OnInitializedAsync()
+    {
+        bulkEmail = await BulkEmailService.GetByIdAsync(Id);
+    }
+}

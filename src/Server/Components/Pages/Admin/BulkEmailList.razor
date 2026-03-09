@@ -40,7 +40,7 @@
                         var sent = bulkEmail.Recipients.Count(r => r.SentAt != null);
                         var total = bulkEmail.Recipients.Count;
                         <RadzenTableRow>
-                            <RadzenTableCell>@bulkEmail.Subject</RadzenTableCell>
+                            <RadzenTableCell><a href="/admin/emails/@bulkEmail.Id">@bulkEmail.Subject</a></RadzenTableCell>
                             <RadzenTableCell>@bulkEmail.Sender.FullName</RadzenTableCell>
                             <RadzenTableCell>@sent / @total</RadzenTableCell>
                             <RadzenTableCell>

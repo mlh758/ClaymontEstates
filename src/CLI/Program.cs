@@ -42,7 +42,7 @@ createUserCommand.SetAction(async (parseResult) =>
     }
     // Always include Resident
     if (!roles.Contains(Roles.Resident))
-        roles = [..roles, Roles.Resident];
+        roles = [.. roles, Roles.Resident];
 
     var services = new ServiceCollection();
     services.AddLogging();

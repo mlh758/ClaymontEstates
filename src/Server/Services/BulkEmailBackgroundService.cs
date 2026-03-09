@@ -34,6 +34,7 @@ public class BulkEmailBackgroundService(IServiceScopeFactory scopeFactory, ILogg
         // Find bulk emails that have deliverable recipients
         // Exclude recipients that already sent, or failed within the last 30 minutes
         var pendingEmails = await db.BulkEmails
+            .Include(b => b.Sender)
             .Include(b => b.Recipients
                 .Where(r => r.SentAt == null && (r.FailedAt == null || r.FailedAt < retryCutoff)))
                 .ThenInclude(r => r.User)
@@ -57,11 +58,17 @@ public class BulkEmailBackgroundService(IServiceScopeFactory scopeFactory, ILogg
 
                 try
                 {
-                    await emailFactory.Create()
+                    var email = emailFactory.Create()
                         .To(recipient.User.Email)
                         .Subject(bulkEmail.Subject)
-                        .Body(bulkEmail.Body, isHtml: true)
-                        .SendAsync(ct);
+                        .Body(bulkEmail.Body, isHtml: true);
+
+                    if (bulkEmail.Sender?.Email is not null)
+                    {
+                        email.ReplyTo(bulkEmail.Sender.Email);
+                    }
+
+                    await email.SendAsync(ct);
 
                     recipient.SentAt = DateTime.UtcNow;
                     await db.SaveChangesAsync(ct);

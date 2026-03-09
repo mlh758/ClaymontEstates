@@ -9,7 +9,7 @@ public class EventSummary
     public int RsvpCount { get; set; }
 }
 
-public class EventService(ApplicationDbContext db, HtmlSanitizationService sanitizer )
+public class EventService(ApplicationDbContext db, HtmlSanitizationService sanitizer)
 {
     public async Task<List<Event>> GetRecentAndUpcomingAsync()
     {
@@ -82,7 +82,7 @@ public class EventService(ApplicationDbContext db, HtmlSanitizationService sanit
 
     public async Task<(bool Success, string? Error)> UpdateAsync(Event evt, string name, string description, DateTime date, TimeSpan duration, string? location, bool isPublic, bool requiresRsvp)
     {
-        
+
         evt.Name = name;
         evt.Description = sanitizer.Sanitize(description);
         evt.Date = date;

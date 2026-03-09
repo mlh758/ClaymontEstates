@@ -28,6 +28,15 @@ public class BulkEmailService(ApplicationDbContext db, HtmlSanitizationService s
         return bulkEmail;
     }
 
+    public async Task<BulkEmail?> GetByIdAsync(int id)
+    {
+        return await db.BulkEmails
+            .Include(b => b.Sender)
+            .Include(b => b.Recipients)
+                .ThenInclude(r => r.User)
+            .FirstOrDefaultAsync(b => b.Id == id);
+    }
+
     public async Task<List<BulkEmail>> GetAllAsync()
     {
         return await db.BulkEmails
