@@ -19,6 +19,8 @@
     --color-sidebar-top: hsla(210, 25%, 18%, 1);
     --color-sidebar-bottom: hsla(210, 30%, 12%, 1);
     --spacing: 4px;
+    --rz-badge-font-weight: 600;
+    --rz-badge-padding: 0.25rem 0.5rem;
 }
 
 html, body {
@@ -149,18 +151,6 @@ hr { border: none; border-top: 1px solid #e0e0e0; margin: 1rem 0; }
 }
 
 
-/* --- Badges --- */
-.badge {
-    display: inline-block;
-    padding: 0.2rem 0.5rem;
-    font-size: 0.75rem;
-    font-weight: 600;
-    border-radius: 4px;
-    line-height: 1;
-}
-.bg-success { background: var(--rz-success); color: #fff; }
-.bg-secondary { background: var(--rz-secondary); color: #fff; }
-.bg-opacity-10 { opacity: 0.8; }
 
 /* --- List groups --- */
 .list-group { list-style: none; padding: 0; margin: 0; border: 1px solid #e0e0e0; border-radius: 4px; }

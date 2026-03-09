@@ -17,7 +17,7 @@
         <h1 class="card-title">Events</h1>
         <div class="d-flex align-items-center" style="gap: calc(var(--spacing) * 6)">
             <button class="btn btn-outline-secondary btn-sm" @onclick="PreviousMonth">&laquo; Previous</button>
-            <h5>@currentMonth.ToString("MMMM yyyy")</h5>
+            <h4>@currentMonth.ToString("MMMM yyyy")</h4>
             <button class="btn btn-outline-secondary btn-sm" @onclick="NextMonth">Next &raquo;</button>
         </div>
     </div>
@@ -43,7 +43,7 @@ else
                     <span class="text-muted">@summary.RsvpCount attending</span>
                     @if (attending)
                     {
-                        <span class="badge bg-success">You're going</span>
+                        <RadzenBadge Text="You're going" BadgeStyle="BadgeStyle.Success" />
                         <button class="btn btn-sm btn-outline-danger" @onclick="() => CancelRsvpAsync(summary)">Cancel</button>
                     }
                     else

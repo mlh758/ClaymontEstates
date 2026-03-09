@@ -5,7 +5,7 @@
         <div class="card">
             <div class="card-header d-flex justify-content-between align-items-center">
                 <strong>@AvailableLabel</strong>
-                <span class="badge bg-secondary">@FilteredAvailable.Count</span>
+                <RadzenBadge Text="@FilteredAvailable.Count.ToString()" BadgeStyle="BadgeStyle.Secondary" />
             </div>
             <div class="card-body p-2">
                 <input type="text" class="form-control form-control-sm mb-2"
@@ -51,9 +51,9 @@
 
     <div class="col-md-6">
         <div class="card border-success">
-            <div class="card-header d-flex justify-content-between align-items-center bg-success bg-opacity-10">
+            <div class="card-header d-flex justify-content-between align-items-center" style="background: color-mix(in srgb, var(--rz-success) 15%, white)">
                 <strong>@SelectedLabel</strong>
-                <span class="badge bg-success">@FilteredSelected.Count</span>
+                <RadzenBadge Text="@FilteredSelected.Count.ToString()" BadgeStyle="BadgeStyle.Success" />
             </div>
             <div class="card-body p-2">
                 <input type="text" class="form-control form-control-sm mb-2"
