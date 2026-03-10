@@ -60,7 +60,11 @@
         var actorEmail = authState.User.FindFirstValue(ClaimTypes.Email) ?? "unknown";
         if (userId is null) return;
 
-        var contact = await ContactService.CreateAsync(userId, model!.Name, model.PhoneNumber, model.Email, model.Address);
+        var contact = await ContactService.CreateAsync(userId, new EmergencyContactParams(
+            Name: model!.Name,
+            PhoneNumber: model.PhoneNumber,
+            Email: model.Email,
+            Address: model.Address));
 
         await AuditService.LogAsync(AuditAction.CreateEmergencyContact, actorEmail, null, new Dictionary<string, string>
         {

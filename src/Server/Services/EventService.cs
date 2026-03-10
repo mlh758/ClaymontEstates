@@ -9,6 +9,15 @@ public class EventSummary
     public int RsvpCount { get; set; }
 }
 
+public record EventParams(
+    string Name,
+    string Description,
+    DateTime Date,
+    TimeSpan Duration,
+    string? Location,
+    bool IsPublic,
+    bool RequiresRsvp);
+
 public class EventService(ApplicationDbContext db, HtmlSanitizationService sanitizer)
 {
     public async Task<List<Event>> GetRecentAndUpcomingAsync()
@@ -61,17 +70,17 @@ public class EventService(ApplicationDbContext db, HtmlSanitizationService sanit
             .FirstOrDefaultAsync(e => e.Id == id);
     }
 
-    public async Task<Event> CreateAsync(string name, string description, DateTime date, TimeSpan duration, string? location, bool isPublic, bool requiresRsvp, string createdByEmail)
+    public async Task<Event> CreateAsync(EventParams p, string createdByEmail)
     {
         var evt = new Event
         {
-            Name = name,
-            Description = sanitizer.Sanitize(description),
-            Date = date,
-            Duration = duration,
-            Location = location,
-            IsPublic = isPublic,
-            RequiresRsvp = requiresRsvp,
+            Name = p.Name,
+            Description = sanitizer.Sanitize(p.Description),
+            Date = p.Date,
+            Duration = p.Duration,
+            Location = p.Location,
+            IsPublic = p.IsPublic,
+            RequiresRsvp = p.RequiresRsvp,
             CreatedByEmail = createdByEmail
         };
 
@@ -80,16 +89,15 @@ public class EventService(ApplicationDbContext db, HtmlSanitizationService sanit
         return evt;
     }
 
-    public async Task<(bool Success, string? Error)> UpdateAsync(Event evt, string name, string description, DateTime date, TimeSpan duration, string? location, bool isPublic, bool requiresRsvp)
+    public async Task<(bool Success, string? Error)> UpdateAsync(Event evt, EventParams p)
     {
-
-        evt.Name = name;
-        evt.Description = sanitizer.Sanitize(description);
-        evt.Date = date;
-        evt.Duration = duration;
-        evt.Location = location;
-        evt.IsPublic = isPublic;
-        evt.RequiresRsvp = requiresRsvp;
+        evt.Name = p.Name;
+        evt.Description = sanitizer.Sanitize(p.Description);
+        evt.Date = p.Date;
+        evt.Duration = p.Duration;
+        evt.Location = p.Location;
+        evt.IsPublic = p.IsPublic;
+        evt.RequiresRsvp = p.RequiresRsvp;
 
         await db.SaveChangesAsync();
         return (true, null);

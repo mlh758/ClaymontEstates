@@ -90,8 +90,15 @@
 
         await using var stream = selectedFile.OpenReadStream(maxAllowedSize: 50 * 1024 * 1024);
         var (success, error, doc) = await DocumentService.UploadAsync(
-            model.Name, model.Description, model.EffectiveDate, actorEmail,
-            stream, selectedFile.Name, selectedFile.ContentType, selectedFile.Size);
+            new DocumentUploadParams(
+                Name: model.Name,
+                Description: model.Description,
+                EffectiveDate: model.EffectiveDate,
+                UploaderEmail: actorEmail,
+                FileStream: stream,
+                FileName: selectedFile.Name,
+                ContentType: selectedFile.ContentType,
+                FileSize: selectedFile.Size));
 
         if (success)
         {

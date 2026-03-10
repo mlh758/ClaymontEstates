@@ -152,7 +152,14 @@ else
         var dateTime = model.Date.Add(model.Time.TimeOfDay);
         var duration = TimeSpan.FromHours(model.DurationHours);
 
-        await EventService.UpdateAsync(evt, model.Name, model.Description ?? "", dateTime, duration, model.Location, model.IsPublic, model.RequiresRsvp);
+        await EventService.UpdateAsync(evt, new EventParams(
+            Name: model.Name,
+            Description: model.Description ?? "",
+            Date: dateTime,
+            Duration: duration,
+            Location: model.Location,
+            IsPublic: model.IsPublic,
+            RequiresRsvp: model.RequiresRsvp));
 
         var authState = await AuthStateProvider.GetAuthenticationStateAsync();
         var actorEmail = authState.User.FindFirstValue(ClaimTypes.Email) ?? "unknown";

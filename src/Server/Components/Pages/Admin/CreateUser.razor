@@ -80,7 +80,11 @@
     {
         var baseUrl = Nav.BaseUri.TrimEnd('/');
         var (success, errs) = await UserService.CreateUserAsync(
-            model.FullName, model.Email, model.Phone, model.StreetAddress, baseUrl);
+            new UserParams(
+                FullName: model!.FullName,
+                Email: model.Email,
+                Phone: model.Phone,
+                StreetAddress: model.StreetAddress), baseUrl);
 
         if (success)
         {

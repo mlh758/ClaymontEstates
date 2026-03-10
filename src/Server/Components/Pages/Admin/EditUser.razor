@@ -166,7 +166,13 @@
         if (user is null) return;
 
         var (success, errors) = await UserService.UpdateUserAsync(
-            user, model.FullName, model.Email, model.Phone, model.StreetAddress, model.ShowContactInfo, model.WantsEmailNotifications);
+            user, new UserParams(
+                FullName: model.FullName,
+                Email: model.Email,
+                Phone: model.Phone,
+                StreetAddress: model.StreetAddress,
+                ShowContactInfo: model.ShowContactInfo,
+                WantsEmailNotifications: model.WantsEmailNotifications));
 
         if (!success)
         {

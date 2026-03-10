@@ -3,6 +3,12 @@ using Server.Data;
 
 namespace Server.Services;
 
+public record EmergencyContactParams(
+    string Name,
+    string? PhoneNumber,
+    string? Email,
+    string? Address);
+
 public class EmergencyContactService(ApplicationDbContext db)
 {
     public async Task<List<EmergencyContact>> GetByUserIdAsync(string userId)
@@ -29,15 +35,15 @@ public class EmergencyContactService(ApplicationDbContext db)
             .FirstOrDefaultAsync(ec => ec.Id == id);
     }
 
-    public async Task<EmergencyContact> CreateAsync(string userId, string name, string? phoneNumber, string? email, string? address)
+    public async Task<EmergencyContact> CreateAsync(string userId, EmergencyContactParams p)
     {
         var contact = new EmergencyContact
         {
             UserId = userId,
-            Name = name,
-            PhoneNumber = phoneNumber,
-            Email = email,
-            Address = address
+            Name = p.Name,
+            PhoneNumber = p.PhoneNumber,
+            Email = p.Email,
+            Address = p.Address
         };
 
         db.EmergencyContacts.Add(contact);
@@ -45,12 +51,12 @@ public class EmergencyContactService(ApplicationDbContext db)
         return contact;
     }
 
-    public async Task UpdateAsync(EmergencyContact contact, string name, string? phoneNumber, string? email, string? address)
+    public async Task UpdateAsync(EmergencyContact contact, EmergencyContactParams p)
     {
-        contact.Name = name;
-        contact.PhoneNumber = phoneNumber;
-        contact.Email = email;
-        contact.Address = address;
+        contact.Name = p.Name;
+        contact.PhoneNumber = p.PhoneNumber;
+        contact.Email = p.Email;
+        contact.Address = p.Address;
         await db.SaveChangesAsync();
     }
 

@@ -129,7 +129,11 @@ else
     {
         if (contact is null) return;
 
-        await ContactService.UpdateAsync(contact, model.Name, model.PhoneNumber, model.Email, model.Address);
+        await ContactService.UpdateAsync(contact, new EmergencyContactParams(
+            Name: model.Name,
+            PhoneNumber: model.PhoneNumber,
+            Email: model.Email,
+            Address: model.Address));
 
         var authState = await AuthStateProvider.GetAuthenticationStateAsync();
         var actorEmail = authState.User.FindFirstValue(ClaimTypes.Email) ?? "unknown";

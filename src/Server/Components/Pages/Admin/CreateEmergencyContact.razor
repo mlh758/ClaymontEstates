@@ -74,7 +74,11 @@ else
     {
         if (user is null) return;
 
-        var contact = await ContactService.CreateAsync(UserId, model!.Name, model.PhoneNumber, model.Email, model.Address);
+        var contact = await ContactService.CreateAsync(UserId, new EmergencyContactParams(
+            Name: model!.Name,
+            PhoneNumber: model.PhoneNumber,
+            Email: model.Email,
+            Address: model.Address));
 
         var authState = await AuthStateProvider.GetAuthenticationStateAsync();
         var actorEmail = authState.User.FindFirstValue(ClaimTypes.Email) ?? "unknown";

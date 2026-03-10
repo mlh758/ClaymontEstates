@@ -6,6 +6,14 @@ using Server.Data;
 
 namespace Server.Services;
 
+public record UserParams(
+    string FullName,
+    string Email,
+    string Phone,
+    string StreetAddress,
+    bool ShowContactInfo = true,
+    bool WantsEmailNotifications = true);
+
 public class UserService(UserManager<ApplicationUser> userManager, RoleManager<IdentityRole> roleManager, ApplicationDbContext db, EmailOutboxService outbox)
 {
     private IQueryable<ApplicationUser> UsersWithRoles => db.Users
@@ -42,16 +50,15 @@ public class UserService(UserManager<ApplicationUser> userManager, RoleManager<I
         return await userManager.FindByIdAsync(id);
     }
 
-    public async Task<(bool Success, string[] Errors)> CreateUserAsync(
-        string fullName, string emailAddress, string phone, string streetAddress, string baseUrl)
+    public async Task<(bool Success, string[] Errors)> CreateUserAsync(UserParams p, string baseUrl)
     {
         var user = new ApplicationUser
         {
-            UserName = emailAddress,
-            Email = emailAddress,
-            FullName = fullName,
-            PhoneNumber = phone,
-            StreetAddress = streetAddress,
+            UserName = p.Email,
+            Email = p.Email,
+            FullName = p.FullName,
+            PhoneNumber = p.Phone,
+            StreetAddress = p.StreetAddress,
             EmailConfirmed = true
         };
 
@@ -65,16 +72,15 @@ public class UserService(UserManager<ApplicationUser> userManager, RoleManager<I
         return (true, []);
     }
 
-    public async Task<(bool Success, string[] Errors)> UpdateUserAsync(
-        ApplicationUser user, string fullName, string email, string phone, string streetAddress, bool showContactInfo, bool wantsEmailNotifications)
+    public async Task<(bool Success, string[] Errors)> UpdateUserAsync(ApplicationUser user, UserParams p)
     {
-        user.FullName = fullName;
-        user.Email = email;
-        user.UserName = email;
-        user.PhoneNumber = phone;
-        user.StreetAddress = streetAddress;
-        user.ShowContactInfo = showContactInfo;
-        user.WantsEmailNotifications = wantsEmailNotifications;
+        user.FullName = p.FullName;
+        user.Email = p.Email;
+        user.UserName = p.Email;
+        user.PhoneNumber = p.Phone;
+        user.StreetAddress = p.StreetAddress;
+        user.ShowContactInfo = p.ShowContactInfo;
+        user.WantsEmailNotifications = p.WantsEmailNotifications;
 
         var result = await userManager.UpdateAsync(user);
         return (result.Succeeded, result.Errors.Select(e => e.Description).ToArray());

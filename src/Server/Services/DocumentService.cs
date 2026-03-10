@@ -3,6 +3,16 @@ using Server.Data;
 
 namespace Server.Services;
 
+public record DocumentUploadParams(
+    string Name,
+    string? Description,
+    DateTime EffectiveDate,
+    string UploaderEmail,
+    Stream FileStream,
+    string FileName,
+    string ContentType,
+    long FileSize);
+
 public class DocumentService(ApplicationDbContext db, IConfiguration config)
 {
     private const long MaxFileSizeBytes = 50 * 1024 * 1024; // 50 MB
@@ -21,36 +31,35 @@ public class DocumentService(ApplicationDbContext db, IConfiguration config)
         return await db.Documents.FindAsync(id);
     }
 
-    public async Task<(bool Success, string? Error, Document? Document)> UploadAsync(
-        string name, string? description, DateTime effectiveDate, string uploaderEmail, Stream fileStream, string fileName, string contentType, long fileSize)
+    public async Task<(bool Success, string? Error, Document? Document)> UploadAsync(DocumentUploadParams p)
     {
-        if (fileSize > MaxFileSizeBytes)
+        if (p.FileSize > MaxFileSizeBytes)
             return (false, $"File exceeds the maximum size of {MaxFileSizeBytes / 1024 / 1024} MB.", null);
 
-        if (fileSize == 0)
+        if (p.FileSize == 0)
             return (false, "File is empty.", null);
 
         var storagePath = StoragePath;
         Directory.CreateDirectory(storagePath);
 
-        var storedFileName = $"{Guid.NewGuid()}{Path.GetExtension(fileName)}";
+        var storedFileName = $"{Guid.NewGuid()}{Path.GetExtension(p.FileName)}";
         var fullPath = Path.Combine(storagePath, storedFileName);
 
         await using (var fileOut = File.Create(fullPath))
         {
-            await fileStream.CopyToAsync(fileOut);
+            await p.FileStream.CopyToAsync(fileOut);
         }
 
         var document = new Document
         {
-            Name = name,
-            Description = description,
-            FileName = fileName,
+            Name = p.Name,
+            Description = p.Description,
+            FileName = p.FileName,
             StoragePath = storedFileName,
-            UploadedByEmail = uploaderEmail,
-            EffectiveDate = effectiveDate,
-            FileSizeBytes = fileSize,
-            ContentType = contentType
+            UploadedByEmail = p.UploaderEmail,
+            EffectiveDate = p.EffectiveDate,
+            FileSizeBytes = p.FileSize,
+            ContentType = p.ContentType
         };
 
         db.Documents.Add(document);

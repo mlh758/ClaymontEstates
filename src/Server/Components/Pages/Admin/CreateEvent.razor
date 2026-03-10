@@ -98,8 +98,15 @@
         var actorEmail = authState.User.FindFirstValue(ClaimTypes.Email) ?? "unknown";
 
         var evt = await EventService.CreateAsync(
-            model.Name, model.Description ?? "", dateTime, duration,
-            model.Location, model.IsPublic, model.RequiresRsvp, actorEmail);
+            new EventParams(
+                Name: model.Name,
+                Description: model.Description ?? "",
+                Date: dateTime,
+                Duration: duration,
+                Location: model.Location,
+                IsPublic: model.IsPublic,
+                RequiresRsvp: model.RequiresRsvp),
+            actorEmail);
 
         await AuditService.LogAsync(AuditAction.CreateEvent, actorEmail, null, new Dictionary<string, string>
         {
