@@ -20,6 +20,8 @@
                    @bind="searchQuery" @bind:event="oninput" @bind:after="OnSearchInput" />
         </div>
 
+        <RadzenMediaQuery Query="(max-width: 768px)" Change="@(matches => isMobile = matches)" />
+
         @if (residents is null)
         {
             <p><em>Loading...</em></p>
@@ -28,9 +30,37 @@
         {
             <p class="mb-0">No residents found.</p>
         }
+        else if (isMobile)
+        {
+            @foreach (var (resident, role) in residents)
+            {
+                var showPrivate = isOfficerOrAbove || resident.ShowContactInfo;
+                <RadzenCard class="mb-2">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <h5 class="mb-0 mt-0 text-lg">@resident.FullName</h5>
+                        @if (!string.IsNullOrEmpty(role))
+                        {
+                            <RadzenBadge BadgeStyle="BadgeStyle.Info" Text="@role" />
+                        }
+                    </div>
+                    <p class="mb-1 text-muted">@resident.StreetAddress</p>
+                    @if (showPrivate)
+                    {
+                        @if (!string.IsNullOrEmpty(resident.Email))
+                        {
+                            <p class="mb-1"><strong>Email:</strong> @resident.Email</p>
+                        }
+                        @if (!string.IsNullOrEmpty(resident.PhoneNumber))
+                        {
+                            <p class="mb-0"><strong>Phone:</strong> @resident.PhoneNumber</p>
+                        }
+                    }
+                </RadzenCard>
+            }
+        }
         else
         {
-            <RadzenTable >
+            <RadzenTable>
                 <RadzenTableHeader>
                     <RadzenTableHeaderRow>
                         <RadzenTableHeaderCell>Name</RadzenTableHeaderCell>
@@ -62,6 +92,7 @@
     private List<(ApplicationUser User, string? DisplayRoles)>? residents;
     private string? searchQuery;
     private bool isOfficerOrAbove;
+    private bool isMobile;
     private Timer? debounceTimer;
 
     protected override async Task OnInitializedAsync()
