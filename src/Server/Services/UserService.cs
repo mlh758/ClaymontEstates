@@ -125,6 +125,7 @@ public class UserService(UserManager<ApplicationUser> userManager, RoleManager<I
               <p>An account has been created for you on the Claymont Estates community portal.</p>
               <p>Please click the link below to set your password and get started:</p>
               <p><a href="{resetLink}">Set Your Password</a></p>
+              <p>This link expires in 1 day. If it has expired, you can request a new one using the password reset option on the login page.</p>
               <p>If you did not expect this email, you can safely ignore it.</p>
               """
             : $"""
@@ -133,6 +134,7 @@ public class UserService(UserManager<ApplicationUser> userManager, RoleManager<I
               <p>A password reset was requested for your Claymont Estates HOA account.</p>
               <p>Please click the link below to reset your password:</p>
               <p><a href="{resetLink}">Reset Your Password</a></p>
+              <p>This link expires in 1 day. If it has expired, you can request a new one from the login page.</p>
               <p>If you did not request this, you can safely ignore it.</p>
               """;
 
