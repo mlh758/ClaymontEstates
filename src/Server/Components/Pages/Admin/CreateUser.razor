@@ -4,10 +4,12 @@
 @using Server.Data
 @using Server.Services
 @attribute [Authorize(Policy = Roles.OfficerPolicy)]
+@rendermode InteractiveServer
 
 @inject UserService UserService
 @inject AuditService AuditService
 @inject NavigationManager Nav
+@inject AuthenticationStateProvider AuthStateProvider
 
 <PageTitle>Create User</PageTitle>
 
@@ -34,7 +36,7 @@
                 </RadzenAlert>
             }
 
-            <EditForm Model="model" OnValidSubmit="CreateAsync" FormName="createUser">
+            <EditForm Model="model" OnValidSubmit="CreateAsync">
                 <DataAnnotationsValidator />
                 <ValidationSummary />
 
@@ -54,8 +56,41 @@
                 </div>
 
                 <div class="mb-3">
-                    <label class="form-label">Street Address</label>
-                    <InputText class="form-control" @bind-Value="model.StreetAddress" />
+                    <label class="form-label">Addresses</label>
+                    @for (var i = 0; i < model.Addresses.Count; i++)
+                    {
+                        var index = i;
+                        var addr = model.Addresses[index];
+                        <div class="card mb-2">
+                            <div class="card-body py-2 px-3">
+                                <div class="mb-2">
+                                    <InputText class="form-control" placeholder="Street address" @bind-Value="addr.StreetAddress" />
+                                </div>
+                                <div class="row g-2 mb-2">
+                                    <div class="col">
+                                        <InputText class="form-control" placeholder="City" @bind-Value="addr.City" />
+                                    </div>
+                                    <div class="col-auto" style="width: 5rem;">
+                                        <InputText class="form-control" placeholder="State" @bind-Value="addr.State" />
+                                    </div>
+                                    <div class="col-auto" style="width: 7rem;">
+                                        <InputText class="form-control" placeholder="Zip" @bind-Value="addr.Zip" />
+                                    </div>
+                                </div>
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div class="form-check">
+                                        <InputCheckbox class="form-check-input" id="@($"create-private-{index}")" @bind-Value="addr.IsPrivate" />
+                                        <label class="form-check-label" for="@($"create-private-{index}")">Private (officers only)</label>
+                                    </div>
+                                    @if (model.Addresses.Count > 1)
+                                    {
+                                        <button type="button" class="btn btn-sm btn-outline-danger" @onclick="() => model.Addresses.RemoveAt(index)">Remove</button>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    }
+                    <button type="button" class="btn btn-sm btn-outline-secondary" @onclick="() => model.Addresses.Add(new())">Add Address</button>
                 </div>
 
                 <button type="submit" class="btn btn-primary">Create & Send Invite</button>
@@ -66,31 +101,30 @@
 </div>
 
 @code {
-    [CascadingParameter]
-    private HttpContext HttpContext { get; set; } = default!;
-
-    [SupplyParameterFromForm]
-    private CreateUserModel? model { get; set; }
+    private CreateUserModel model = new();
     private string[] errors = [];
     private bool created;
+    private string? actorEmail;
 
-    protected override void OnInitialized() => model ??= new();
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+        actorEmail = authState.User.FindFirstValue(ClaimTypes.Email) ?? "unknown";
+    }
 
     private async Task CreateAsync()
     {
         var baseUrl = Nav.BaseUri.TrimEnd('/');
         var (success, errs) = await UserService.CreateUserAsync(
             new UserParams(
-                FullName: model!.FullName,
+                FullName: model.FullName,
                 Email: model.Email,
                 Phone: model.Phone,
-                StreetAddress: model.StreetAddress), baseUrl);
+                Addresses: model.Addresses.Select(a => new AddressParams(a.StreetAddress, a.City, a.State, a.Zip, a.IsPrivate)).ToList()), baseUrl);
 
         if (success)
         {
-            var actorEmail = HttpContext.User.FindFirstValue(ClaimTypes.Email) ?? "unknown";
-            var ip = HttpContext.Connection.RemoteIpAddress?.ToString();
-            await AuditService.LogAsync(AuditAction.CreateUser, actorEmail, ip, new Dictionary<string, string>
+            await AuditService.LogAsync(AuditAction.CreateUser, actorEmail!, null, new Dictionary<string, string>
             {
                 ["TargetEmail"] = model.Email,
                 ["TargetName"] = model.FullName
@@ -114,7 +148,15 @@
 
         public string Phone { get; set; } = "";
 
-        [System.ComponentModel.DataAnnotations.Required]
+        public List<AddressModel> Addresses { get; set; } = [new()];
+    }
+
+    private sealed class AddressModel
+    {
         public string StreetAddress { get; set; } = "";
+        public string City { get; set; } = "";
+        public string State { get; set; } = "";
+        public string Zip { get; set; } = "";
+        public bool IsPrivate { get; set; }
     }
 }

@@ -6,29 +6,37 @@ using Server.Data;
 
 namespace Server.Services;
 
+public record AddressParams(
+    string StreetAddress,
+    string City = "",
+    string State = "",
+    string Zip = "",
+    bool IsPrivate = false);
+
 public record UserParams(
     string FullName,
     string Email,
     string Phone,
-    string StreetAddress,
+    List<AddressParams> Addresses,
     bool ShowContactInfo = true,
     bool WantsEmailNotifications = true);
 
 public class UserService(UserManager<ApplicationUser> userManager, RoleManager<IdentityRole> roleManager, ApplicationDbContext db, EmailOutboxService outbox)
 {
-    private IQueryable<ApplicationUser> UsersWithRoles => db.Users
-        .Include(u => u.UserRoles).ThenInclude(ur => ur.Role);
+    private IQueryable<ApplicationUser> UsersWithRolesAndAddresses => db.Users
+        .Include(u => u.UserRoles).ThenInclude(ur => ur.Role)
+        .Include(u => u.Addresses);
 
     public async Task<List<ApplicationUser>> GetAllUsersWithRolesAsync(string? query = null)
     {
-        var usersQuery = UsersWithRoles;
+        var usersQuery = UsersWithRolesAndAddresses;
 
         if (!string.IsNullOrWhiteSpace(query))
         {
             var lowerQuery = query.ToLower();
             usersQuery = usersQuery.Where(u =>
                 u.FullName.ToLower().Contains(lowerQuery)
-                || u.StreetAddress.ToLower().Contains(lowerQuery));
+                || u.Addresses.Any(a => a.StreetAddress.ToLower().Contains(lowerQuery)));
         }
 
         return await usersQuery.OrderBy(u => u.FullName).ToListAsync();
@@ -58,13 +66,24 @@ public class UserService(UserManager<ApplicationUser> userManager, RoleManager<I
             Email = p.Email,
             FullName = p.FullName,
             PhoneNumber = p.Phone,
-            StreetAddress = p.StreetAddress,
             EmailConfirmed = true
         };
 
         var result = await userManager.CreateAsync(user);
         if (!result.Succeeded)
             return (false, result.Errors.Select(e => e.Description).ToArray());
+
+        foreach (var a in p.Addresses.Where(a => !string.IsNullOrWhiteSpace(a.StreetAddress)))
+            db.Addresses.Add(new Address
+            {
+                UserId = user.Id,
+                StreetAddress = a.StreetAddress.Trim(),
+                City = a.City.Trim(),
+                State = a.State.Trim(),
+                Zip = a.Zip.Trim(),
+                IsPrivate = a.IsPrivate
+            });
+        await db.SaveChangesAsync();
 
         await userManager.AddToRoleAsync(user, Roles.Resident);
         await SendPasswordResetEmailAsync(user, baseUrl, isNewAccount: true);
@@ -78,12 +97,34 @@ public class UserService(UserManager<ApplicationUser> userManager, RoleManager<I
         user.Email = p.Email;
         user.UserName = p.Email;
         user.PhoneNumber = p.Phone;
-        user.StreetAddress = p.StreetAddress;
         user.ShowContactInfo = p.ShowContactInfo;
         user.WantsEmailNotifications = p.WantsEmailNotifications;
 
         var result = await userManager.UpdateAsync(user);
-        return (result.Succeeded, result.Errors.Select(e => e.Description).ToArray());
+        if (!result.Succeeded)
+            return (false, result.Errors.Select(e => e.Description).ToArray());
+
+        // Sync addresses: remove old, add new
+        var existing = await db.Addresses.Where(a => a.UserId == user.Id).ToListAsync();
+        db.Addresses.RemoveRange(existing);
+        foreach (var a in p.Addresses.Where(a => !string.IsNullOrWhiteSpace(a.StreetAddress)))
+            db.Addresses.Add(new Address
+            {
+                UserId = user.Id,
+                StreetAddress = a.StreetAddress.Trim(),
+                City = a.City.Trim(),
+                State = a.State.Trim(),
+                Zip = a.Zip.Trim(),
+                IsPrivate = a.IsPrivate
+            });
+        await db.SaveChangesAsync();
+
+        return (true, []);
+    }
+
+    public async Task<List<Address>> GetUserAddressesAsync(string userId)
+    {
+        return await db.Addresses.Where(a => a.UserId == userId).ToListAsync();
     }
 
     public async Task<IList<string>> GetUserRolesAsync(ApplicationUser user)

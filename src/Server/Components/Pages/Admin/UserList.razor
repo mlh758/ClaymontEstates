@@ -40,7 +40,7 @@
                             <RadzenTableCell>@user.FullName</RadzenTableCell>
                             <RadzenTableCell>@user.Email</RadzenTableCell>
                             <RadzenTableCell>@user.PhoneNumber</RadzenTableCell>
-                            <RadzenTableCell>@user.StreetAddress</RadzenTableCell>
+                            <RadzenTableCell>@user.AddressDisplay(true)</RadzenTableCell>
                             <RadzenTableCell>@string.Join(", ", user.RoleNames)</RadzenTableCell>
                             <RadzenTableCell>
                                 <a href="/admin/users/edit/@user.Id" class="btn btn-sm btn-outline-secondary">Edit</a>

@@ -4,10 +4,12 @@
 @using Server.Data
 @using Server.Services
 @attribute [Authorize(Policy = Roles.OfficerPolicy)]
+@rendermode InteractiveServer
 
 @inject UserService UserService
 @inject AuditService AuditService
 @inject NavigationManager Nav
+@inject AuthenticationStateProvider AuthStateProvider
 
 <PageTitle>Edit User</PageTitle>
 
@@ -26,7 +28,7 @@
                 <RadzenAlert AlertStyle="@(isError ? AlertStyle.Danger : AlertStyle.Success)" AllowClose="false" ShowIcon="false">@message</RadzenAlert>
             }
 
-            <EditForm Model="model" OnValidSubmit="SaveAsync" FormName="editUser">
+            <EditForm Model="model" OnValidSubmit="SaveAsync">
                 <DataAnnotationsValidator />
                 <ValidationSummary />
 
@@ -46,8 +48,41 @@
                 </div>
 
                 <div class="mb-3">
-                    <label class="form-label" for="edit-address">Street Address</label>
-                    <InputText id="edit-address" class="form-control" @bind-Value="model.StreetAddress" />
+                    <label class="form-label">Addresses</label>
+                    @for (var i = 0; i < model.Addresses.Count; i++)
+                    {
+                        var index = i;
+                        var addr = model.Addresses[index];
+                        <div class="card mb-2">
+                            <div class="card-body py-2 px-3">
+                                <div class="mb-2">
+                                    <InputText class="form-control" placeholder="Street address" @bind-Value="addr.StreetAddress" />
+                                </div>
+                                <div class="row g-2 mb-2">
+                                    <div class="col">
+                                        <InputText class="form-control" placeholder="City" @bind-Value="addr.City" />
+                                    </div>
+                                    <div class="col-auto" style="width: 5rem;">
+                                        <InputText class="form-control" placeholder="State" @bind-Value="addr.State" />
+                                    </div>
+                                    <div class="col-auto" style="width: 7rem;">
+                                        <InputText class="form-control" placeholder="Zip" @bind-Value="addr.Zip" />
+                                    </div>
+                                </div>
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div class="form-check">
+                                        <InputCheckbox class="form-check-input" id="@($"edit-private-{index}")" @bind-Value="addr.IsPrivate" />
+                                        <label class="form-check-label" for="@($"edit-private-{index}")">Private (officers only)</label>
+                                    </div>
+                                    @if (model.Addresses.Count > 1)
+                                    {
+                                        <button type="button" class="btn btn-sm btn-outline-danger" @onclick="() => model.Addresses.RemoveAt(index)">Remove</button>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    }
+                    <button type="button" class="btn btn-sm btn-outline-secondary" @onclick="() => model.Addresses.Add(new())">Add Address</button>
                 </div>
 
                 <div class="mb-3 form-check">
@@ -97,10 +132,7 @@
                 <p class="text-muted mb-1">No password reset emails have been sent.</p>
             }
 
-            <form method="post" @formname="resetPassword" @onsubmit="SendResetEmailAsync">
-                <AntiforgeryToken />
-                <button type="submit" class="btn btn-warning">Send Password Reset Email</button>
-            </form>
+            <button type="button" class="btn btn-warning" @onclick="SendResetEmailAsync">Send Password Reset Email</button>
 
             @if (resetEmailSent)
             {
@@ -115,44 +147,50 @@
     <div class="card mt-4">
         <div class="card-body">
             <h5 class="card-title">Delete User</h5>
-            <form method="post" @formname="deleteUser" @onsubmit="DeleteUserAsync">
-                <AntiforgeryToken />
-                <button type="submit" class="btn btn-danger"
-                        onclick="return confirm('Are you sure you want to delete @user.FullName? This cannot be undone.')">
-                    Delete User
-                </button>
-            </form>
+            <button type="button" class="btn btn-danger" @onclick="DeleteUserAsync">
+                Delete User
+            </button>
         </div>
     </div>
 }
 
 @code {
-    [CascadingParameter]
-    private HttpContext HttpContext { get; set; } = default!;
-
     [Parameter] public string UserId { get; set; } = "";
 
     private ApplicationUser? user;
-    [SupplyParameterFromForm]
-    private EditUserModel model { get; set; } = default!;
+    private EditUserModel model = new();
     private IList<string> currentRoles = [];
     private string? message;
     private bool isError;
     private bool resetEmailSent;
+    private string? actorEmail;
 
     protected override async Task OnInitializedAsync()
     {
+        var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+        actorEmail = authState.User.FindFirstValue(ClaimTypes.Email) ?? "unknown";
+
         user = await UserService.GetUserByIdAsync(UserId);
         if (user is null) return;
 
         currentRoles = await UserService.GetUserRolesAsync(user);
+        var addresses = await UserService.GetUserAddressesAsync(user.Id);
 
-        model ??= new EditUserModel
+        model = new EditUserModel
         {
             FullName = user.FullName,
             Email = user.Email ?? "",
             Phone = user.PhoneNumber ?? "",
-            StreetAddress = user.StreetAddress,
+            Addresses = addresses.Count > 0
+                ? addresses.Select(a => new AddressModel
+                {
+                    StreetAddress = a.StreetAddress,
+                    City = a.City,
+                    State = a.State,
+                    Zip = a.Zip,
+                    IsPrivate = a.IsPrivate
+                }).ToList()
+                : [new()],
             ShowContactInfo = user.ShowContactInfo,
             WantsEmailNotifications = user.WantsEmailNotifications,
             IsPresident = currentRoles.Contains(Roles.President),
@@ -170,7 +208,7 @@
                 FullName: model.FullName,
                 Email: model.Email,
                 Phone: model.Phone,
-                StreetAddress: model.StreetAddress,
+                Addresses: model.Addresses.Select(a => new AddressParams(a.StreetAddress, a.City, a.State, a.Zip, a.IsPrivate)).ToList(),
                 ShowContactInfo: model.ShowContactInfo,
                 WantsEmailNotifications: model.WantsEmailNotifications));
 
@@ -195,9 +233,7 @@
         }
         currentRoles = newRoles;
 
-        var actorEmail = HttpContext.User.FindFirstValue(ClaimTypes.Email) ?? "unknown";
-        var ip = HttpContext.Connection.RemoteIpAddress?.ToString();
-        await AuditService.LogAsync(AuditAction.EditUser, actorEmail, ip, new Dictionary<string, string>
+        await AuditService.LogAsync(AuditAction.EditUser, actorEmail!, null, new Dictionary<string, string>
         {
             ["TargetEmail"] = model.Email,
             ["TargetName"] = model.FullName
@@ -214,9 +250,7 @@
         var baseUrl = Nav.BaseUri.TrimEnd('/');
         await UserService.SendPasswordResetEmailAsync(user, baseUrl);
 
-        var actorEmail = HttpContext.User.FindFirstValue(ClaimTypes.Email) ?? "unknown";
-        var ip = HttpContext.Connection.RemoteIpAddress?.ToString();
-        await AuditService.LogAsync(AuditAction.SendPasswordReset, actorEmail, ip, new Dictionary<string, string>
+        await AuditService.LogAsync(AuditAction.SendPasswordReset, actorEmail!, null, new Dictionary<string, string>
         {
             ["TargetEmail"] = user.Email ?? "",
             ["TargetName"] = user.FullName
@@ -240,9 +274,7 @@
             return;
         }
 
-        var actorEmail = HttpContext.User.FindFirstValue(ClaimTypes.Email) ?? "unknown";
-        var ip = HttpContext.Connection.RemoteIpAddress?.ToString();
-        await AuditService.LogAsync(AuditAction.DeleteUser, actorEmail, ip, new Dictionary<string, string>
+        await AuditService.LogAsync(AuditAction.DeleteUser, actorEmail!, null, new Dictionary<string, string>
         {
             ["TargetEmail"] = targetEmail,
             ["TargetName"] = targetName
@@ -262,13 +294,21 @@
 
         public string Phone { get; set; } = "";
 
-        [System.ComponentModel.DataAnnotations.Required]
-        public string StreetAddress { get; set; } = "";
+        public List<AddressModel> Addresses { get; set; } = [new()];
 
         public bool ShowContactInfo { get; set; } = true;
         public bool WantsEmailNotifications { get; set; } = true;
         public bool IsPresident { get; set; }
         public bool IsTreasurer { get; set; }
         public bool IsSecretary { get; set; }
+    }
+
+    private sealed class AddressModel
+    {
+        public string StreetAddress { get; set; } = "";
+        public string City { get; set; } = "";
+        public string State { get; set; } = "";
+        public string Zip { get; set; } = "";
+        public bool IsPrivate { get; set; }
     }
 }

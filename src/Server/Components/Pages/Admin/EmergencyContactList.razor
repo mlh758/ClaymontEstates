@@ -31,7 +31,7 @@
                     {
                         <RadzenTableRow>
                             <RadzenTableCell>@user.FullName</RadzenTableCell>
-                            <RadzenTableCell>@user.StreetAddress</RadzenTableCell>
+                            <RadzenTableCell>@user.AddressDisplay(true)</RadzenTableCell>
                             <RadzenTableCell>
                                 <a href="/admin/emergency-contacts/@user.Id" class="btn btn-sm btn-outline-secondary">Manage</a>
                             </RadzenTableCell>

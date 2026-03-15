@@ -7,6 +7,7 @@
 @inject UserManager<ApplicationUser> UserManager
 @inject SignInManager<ApplicationUser> SignInManager
 @inject IdentityRedirectManager RedirectManager
+@inject Server.Services.UserService UserService
 
 <PageTitle>Profile</PageTitle>
 
@@ -33,16 +34,19 @@
                 <ValidationMessage For="() => Input.PhoneNumber" class="text-danger" />
             </div>
             <div class="mb-3">
-                <label for="@(isOfficer ? "Input.StreetAddress" : "streetAddress")" class="form-label">Street Address</label>
-                @if (isOfficer)
+                <label class="form-label">Addresses</label>
+                @if (addresses.Count == 0)
                 {
-                    <InputText @bind-Value="Input.StreetAddress" id="Input.StreetAddress" class="form-control" autocomplete="street-address" />
+                    <p class="text-muted">No addresses on file.</p>
                 }
                 else
                 {
-                    <input type="text" autocomplete="street-address" value="@Input.StreetAddress" id="streetAddress" class="form-control" disabled />
-                    <div class="form-text">Contact an officer to update your address.</div>
+                    @foreach (var addr in addresses)
+                    {
+                        <input type="text" value="@addr.StreetAddress" class="form-control mb-1" disabled />
+                    }
                 }
+                <div class="form-text">Contact an officer to update your addresses.</div>
             </div>
             <div class="form-check mb-3">
                 <InputCheckbox @bind-Value="Input.ShowContactInfo" id="Input.ShowContactInfo" class="form-check-input" />
@@ -62,6 +66,7 @@
     private string? username;
     private string? phoneNumber;
     private bool isOfficer;
+    private List<Address> addresses = [];
 
     [CascadingParameter]
     private HttpContext HttpContext { get; set; } = default!;
@@ -88,9 +93,9 @@
         {
             Input.FullName = user.FullName;
             Input.PhoneNumber = phoneNumber;
-            Input.StreetAddress = user.StreetAddress;
             Input.ShowContactInfo = user.ShowContactInfo;
             Input.WantsEmailNotifications = user.WantsEmailNotifications;
+            addresses = await UserService.GetUserAddressesAsync(user.Id);
         }
     }
 
@@ -118,12 +123,6 @@
                 RedirectManager.RedirectToCurrentPageWithStatus("Error: Failed to set phone number.", HttpContext);
                 return;
             }
-        }
-
-        if (isOfficer && Input.StreetAddress != user.StreetAddress)
-        {
-            user.StreetAddress = Input.StreetAddress ?? user.StreetAddress;
-            changed = true;
         }
 
         if (Input.ShowContactInfo != user.ShowContactInfo)
@@ -160,9 +159,6 @@
         [Phone]
         [Display(Name = "Phone number")]
         public string? PhoneNumber { get; set; }
-
-        [Display(Name = "Street Address")]
-        public string? StreetAddress { get; set; }
 
         [Display(Name = "Show contact info")]
         public bool ShowContactInfo { get; set; } = true;

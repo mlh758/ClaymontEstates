@@ -17,7 +17,7 @@
         @if (isAdminView && targetUser is not null)
         {
             <h1 class="card-title">Emergency Contacts</h1>
-            <p class="text-muted">For @targetUser.FullName (@targetUser.StreetAddress)</p>
+            <p class="text-muted">For @targetUser.FullName (@targetUser.AddressDisplay(true))</p>
         }
         else
         {

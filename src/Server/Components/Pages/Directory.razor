@@ -43,7 +43,10 @@
                             <RadzenBadge BadgeStyle="BadgeStyle.Info" Text="@role" />
                         }
                     </div>
-                    <p class="mb-1 text-muted">@resident.StreetAddress</p>
+                    @foreach (var address in (resident.Addresses ?? []).Where(a => isOfficerOrAbove || !a.IsPrivate))
+                    {
+                        <p class="mb-1 text-muted">@address.StreetAddress</p>
+                    }
                     @if (showPrivate)
                     {
                         @if (!string.IsNullOrEmpty(resident.Email))
@@ -74,13 +77,21 @@
                     @foreach (var (resident, role) in residents)
                     {
                         var showPrivate = isOfficerOrAbove || resident.ShowContactInfo;
+                        var visibleAddresses = (resident.Addresses ?? []).Where(a => isOfficerOrAbove || !a.IsPrivate).ToList();
+                        var rowCount = Math.Max(visibleAddresses.Count, 1);
                         <RadzenTableRow>
-                            <RadzenTableCell>@resident.FullName</RadzenTableCell>
-                            <RadzenTableCell>@(role ?? "")</RadzenTableCell>
-                            <RadzenTableCell>@resident.StreetAddress</RadzenTableCell>
-                            <RadzenTableCell>@(showPrivate ? resident.Email : "—")</RadzenTableCell>
-                            <RadzenTableCell>@(showPrivate ? resident.PhoneNumber : "—")</RadzenTableCell>
+                            <RadzenTableCell rowspan="@rowCount" style="vertical-align: middle;">@resident.FullName</RadzenTableCell>
+                            <RadzenTableCell rowspan="@rowCount" style="vertical-align: middle;">@(role ?? "")</RadzenTableCell>
+                            <RadzenTableCell>@(visibleAddresses.ElementAtOrDefault(0)?.StreetAddress ?? "")</RadzenTableCell>
+                            <RadzenTableCell rowspan="@rowCount" style="vertical-align: middle;">@(showPrivate ? resident.Email : "—")</RadzenTableCell>
+                            <RadzenTableCell rowspan="@rowCount" style="vertical-align: middle;">@(showPrivate ? resident.PhoneNumber : "—")</RadzenTableCell>
                         </RadzenTableRow>
+                        @foreach (var extra in visibleAddresses.Skip(1))
+                        {
+                            <RadzenTableRow>
+                                <RadzenTableCell>@extra.StreetAddress</RadzenTableCell>
+                            </RadzenTableRow>
+                        }
                     }
                 </RadzenTableBody>
             </RadzenTable>
