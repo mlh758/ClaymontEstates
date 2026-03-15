@@ -1,0 +1,151 @@
+@page "/admin/users/{UserId}"
+@using Microsoft.AspNetCore.Authorization
+@using Server.Data
+@using Server.Services
+@attribute [Authorize(Policy = Roles.OfficerPolicy)]
+@rendermode InteractiveServer
+
+@inject UserService UserService
+@inject EmergencyContactService ContactService
+@inject IJSRuntime JS
+
+<PageTitle>View User</PageTitle>
+
+<div class="card">
+    <div class="card-body">
+        @if (user is null)
+        {
+            <p><em>Loading...</em></p>
+        }
+        else
+        {
+            <h1 class="card-title">@user.FullName</h1>
+
+            <dl>
+                <dt>Email</dt>
+                <dd>@(user.Email ?? "—")</dd>
+
+                <dt>Phone</dt>
+                <dd>@(!string.IsNullOrEmpty(user.PhoneNumber) ? user.PhoneNumber : "—")</dd>
+
+                <dt>Addresses</dt>
+                <dd>
+                    @if (addresses.Count > 0)
+                    {
+                        @foreach (var addr in addresses)
+                        {
+                            var parts = new[] { addr.StreetAddress, addr.City, addr.State, addr.Zip }
+                                .Where(s => !string.IsNullOrWhiteSpace(s));
+                            <div>
+                                @string.Join(", ", parts)
+                                @if (addr.IsPrivate)
+                                {
+                                    <RadzenBadge Text="Private" IsPill="true" />
+                                }
+                            </div>
+                        }
+                    }
+                    else
+                    {
+                        <text>—</text>
+                    }
+                </dd>
+
+                <dt>Roles</dt>
+                <dd>@string.Join(", ", roles)</dd>
+
+                <dt>Show contact info in directory</dt>
+                <dd>@(user.ShowContactInfo ? "Yes" : "No")</dd>
+
+                <dt>Receives email notifications</dt>
+                <dd>@(user.WantsEmailNotifications ? "Yes" : "No")</dd>
+
+                <dt>Last login</dt>
+                <dd>@(user.LastLoginAt is not null ? FormatLocal(user.LastLoginAt.Value) : "Never")</dd>
+
+                <dt>Last password reset sent</dt>
+                <dd>@(user.LastPasswordResetSentAt is not null ? FormatLocal(user.LastPasswordResetSentAt.Value) : "Never")</dd>
+
+                @if (housemates.Count > 0)
+                {
+                    <dt>Also at this address</dt>
+                    <dd>
+                        @foreach (var hm in housemates)
+                        {
+                            <div><a href="/admin/users/@hm.User.Id">@hm.User.FullName</a> (@hm.SharedAddress)</div>
+                        }
+                    </dd>
+                }
+
+                <dt>Emergency contacts</dt>
+                <dd>
+                    @if (emergencyContacts.Count > 0)
+                    {
+                        @foreach (var ec in emergencyContacts)
+                        {
+                            <div>
+                                @ec.Name
+                                @if (!string.IsNullOrEmpty(ec.Relationship))
+                                {
+                                    <text> — @ec.Relationship</text>
+                                }
+                                @if (!string.IsNullOrEmpty(ec.PhoneNumber))
+                                {
+                                    <text> — @ec.PhoneNumber</text>
+                                }
+                                @if (!string.IsNullOrEmpty(ec.Email))
+                                {
+                                    <text> — @ec.Email</text>
+                                }
+                            </div>
+                        }
+                    }
+                    else
+                    {
+                        <text>None on file</text>
+                    }
+                </dd>
+            </dl>
+
+            <a href="/admin/users/edit/@UserId" class="btn btn-primary mt-3">Edit</a>
+            <a href="/admin/users" class="btn btn-secondary mt-3 ms-2">Back</a>
+        }
+    </div>
+</div>
+
+@code {
+    [Parameter] public string UserId { get; set; } = "";
+
+    private ApplicationUser? user;
+    private List<Address> addresses = [];
+    private IList<string> roles = [];
+    private List<(ApplicationUser User, string SharedAddress)> housemates = [];
+    private List<EmergencyContact> emergencyContacts = [];
+    private TimeSpan browserUtcOffset;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            var offsetMinutes = await JS.InvokeAsync<int>("eval", "new Date().getTimezoneOffset()");
+            browserUtcOffset = TimeSpan.FromMinutes(-offsetMinutes);
+            StateHasChanged();
+        }
+    }
+
+    private string FormatLocal(DateTime utcDateTime)
+    {
+        return utcDateTime.Add(browserUtcOffset).ToString("MMM d, yyyy h:mm tt");
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        user = await UserService.GetUserByIdAsync(UserId);
+        if (user is null) return;
+
+        addresses = await UserService.GetUserAddressesAsync(UserId);
+        roles = await UserService.GetUserRolesAsync(user);
+        housemates = await UserService.GetUsersAtSameAddressesAsync(UserId);
+        emergencyContacts = await ContactService.GetByUserIdAsync(UserId);
+    }
+}

@@ -44,7 +44,7 @@
                     @foreach (var user in users)
                     {
                         <RadzenTableRow>
-                            <RadzenTableCell>@user.FullName</RadzenTableCell>
+                            <RadzenTableCell><a href="/admin/users/@user.Id">@user.FullName</a></RadzenTableCell>
                             <RadzenTableCell>@user.Email</RadzenTableCell>
                             <RadzenTableCell>@user.PhoneNumber</RadzenTableCell>
                             <RadzenTableCell>@user.AddressDisplay(true)</RadzenTableCell>

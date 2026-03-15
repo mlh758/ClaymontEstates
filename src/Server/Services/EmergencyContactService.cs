@@ -7,7 +7,8 @@ public record EmergencyContactParams(
     string Name,
     string? PhoneNumber,
     string? Email,
-    string? Address);
+    string? Address,
+    string? Relationship);
 
 public class EmergencyContactService(ApplicationDbContext db)
 {
@@ -17,6 +18,13 @@ public class EmergencyContactService(ApplicationDbContext db)
             .Where(ec => ec.UserId == userId)
             .OrderBy(ec => ec.Name)
             .ToListAsync();
+    }
+
+    public async Task<Dictionary<string, int>> GetCountsByUserAsync()
+    {
+        return await db.EmergencyContacts
+            .GroupBy(ec => ec.UserId)
+            .ToDictionaryAsync(g => g.Key, g => g.Count());
     }
 
     public async Task<List<EmergencyContact>> GetAllAsync()
@@ -43,7 +51,8 @@ public class EmergencyContactService(ApplicationDbContext db)
             Name = p.Name,
             PhoneNumber = p.PhoneNumber,
             Email = p.Email,
-            Address = p.Address
+            Address = p.Address,
+            Relationship = p.Relationship
         };
 
         db.EmergencyContacts.Add(contact);
@@ -57,6 +66,7 @@ public class EmergencyContactService(ApplicationDbContext db)
         contact.PhoneNumber = p.PhoneNumber;
         contact.Email = p.Email;
         contact.Address = p.Address;
+        contact.Relationship = p.Relationship;
         await db.SaveChangesAsync();
     }
 

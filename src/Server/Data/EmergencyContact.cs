@@ -23,5 +23,8 @@ public class EmergencyContact
     [MaxLength(200)]
     public string? Address { get; set; }
 
+    [MaxLength(50)]
+    public string? Relationship { get; set; }
+
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 }

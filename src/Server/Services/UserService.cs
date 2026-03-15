@@ -131,6 +131,24 @@ public class UserService(UserManager<ApplicationUser> userManager, RoleManager<I
         return await db.Addresses.Where(a => a.UserId == userId).ToListAsync();
     }
 
+    public async Task<List<(ApplicationUser User, string SharedAddress)>> GetUsersAtSameAddressesAsync(string userId)
+    {
+        var userAddresses = await db.Addresses
+            .Where(a => a.UserId == userId)
+            .Select(a => a.StreetAddress.ToLower())
+            .ToListAsync();
+
+        if (userAddresses.Count == 0) return [];
+
+        return await db.Addresses
+            .Include(a => a.User)
+            .Where(a => a.UserId != userId && userAddresses.Contains(a.StreetAddress.ToLower()))
+            .Select(a => new { a.User, a.StreetAddress })
+            .AsAsyncEnumerable()
+            .Select(a => (a.User, a.StreetAddress))
+            .ToListAsync();
+    }
+
     public async Task<IList<string>> GetUserRolesAsync(ApplicationUser user)
     {
         return await userManager.GetRolesAsync(user);

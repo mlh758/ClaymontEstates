@@ -5,6 +5,7 @@
 @attribute [Authorize(Policy = Roles.OfficerPolicy)]
 
 @inject UserService UserService
+@inject EmergencyContactService ContactService
 
 <PageTitle>Manage Emergency Contacts</PageTitle>
 
@@ -23,6 +24,7 @@
                     <RadzenTableHeaderRow>
                         <RadzenTableHeaderCell>Name</RadzenTableHeaderCell>
                         <RadzenTableHeaderCell>Address</RadzenTableHeaderCell>
+                        <RadzenTableHeaderCell>Contacts</RadzenTableHeaderCell>
                         <RadzenTableHeaderCell></RadzenTableHeaderCell>
                     </RadzenTableHeaderRow>
                 </RadzenTableHeader>
@@ -30,8 +32,9 @@
                     @foreach (var user in users)
                     {
                         <RadzenTableRow>
-                            <RadzenTableCell>@user.FullName</RadzenTableCell>
+                            <RadzenTableCell><a href="/admin/users/@user.Id">@user.FullName</a></RadzenTableCell>
                             <RadzenTableCell>@user.AddressDisplay(true)</RadzenTableCell>
+                            <RadzenTableCell>@(contactCounts.GetValueOrDefault(user.Id))</RadzenTableCell>
                             <RadzenTableCell>
                                 <a href="/admin/emergency-contacts/@user.Id" class="btn btn-sm btn-outline-secondary">Manage</a>
                             </RadzenTableCell>
@@ -45,9 +48,11 @@
 
 @code {
     private List<ApplicationUser>? users;
+    private Dictionary<string, int> contactCounts = new();
 
     protected override async Task OnInitializedAsync()
     {
         users = await UserService.GetAllUsersWithRolesAsync();
+        contactCounts = await ContactService.GetCountsByUserAsync();
     }
 }

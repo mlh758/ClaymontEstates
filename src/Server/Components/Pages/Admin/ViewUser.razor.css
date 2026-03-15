@@ -1,0 +1,9 @@
+dl {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+dt {
+    font-weight: bold;
+}

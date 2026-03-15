@@ -103,6 +103,10 @@
                         <label class="form-check-label" for="edit-role-president">President</label>
                     </div>
                     <div class="form-check">
+                        <InputCheckbox id="edit-role-vp" class="form-check-input" @bind-Value="model.IsVicePresident" />
+                        <label class="form-check-label" for="edit-role-vp">Vice President</label>
+                    </div>
+                    <div class="form-check">
                         <InputCheckbox id="edit-role-treasurer" class="form-check-input" @bind-Value="model.IsTreasurer" />
                         <label class="form-check-label" for="edit-role-treasurer">Treasurer</label>
                     </div>
@@ -211,6 +215,7 @@
             ShowContactInfo = user.ShowContactInfo,
             WantsEmailNotifications = user.WantsEmailNotifications,
             IsPresident = currentRoles.Contains(Roles.President),
+            IsVicePresident = currentRoles.Contains(Roles.VicePresident),
             IsTreasurer = currentRoles.Contains(Roles.Treasurer),
             IsSecretary = currentRoles.Contains(Roles.Secretary)
         };
@@ -238,6 +243,7 @@
 
         var newRoles = new List<string> { Roles.Resident };
         if (model.IsPresident) newRoles.Add(Roles.President);
+        if (model.IsVicePresident) newRoles.Add(Roles.VicePresident);
         if (model.IsTreasurer) newRoles.Add(Roles.Treasurer);
         if (model.IsSecretary) newRoles.Add(Roles.Secretary);
 
@@ -324,6 +330,7 @@
         public bool ShowContactInfo { get; set; } = true;
         public bool WantsEmailNotifications { get; set; } = true;
         public bool IsPresident { get; set; }
+        public bool IsVicePresident { get; set; }
         public bool IsTreasurer { get; set; }
         public bool IsSecretary { get; set; }
     }

@@ -41,6 +41,11 @@
                 <InputText id="contact-address" class="form-control" @bind-Value="model.Address" />
             </div>
 
+            <div class="mb-3">
+                <label class="form-label" for="contact-relationship">Relationship</label>
+                <InputText id="contact-relationship" class="form-control" placeholder="e.g. spouse, neighbor" @bind-Value="model.Relationship" />
+            </div>
+
             <button type="submit" class="btn btn-primary">Create</button>
             <a href="/emergency-contacts" class="btn btn-secondary ms-2">Cancel</a>
         </EditForm>
@@ -64,7 +69,8 @@
             Name: model!.Name,
             PhoneNumber: model.PhoneNumber,
             Email: model.Email,
-            Address: model.Address));
+            Address: model.Address,
+            Relationship: model.Relationship));
 
         await AuditService.LogAsync(AuditAction.CreateEmergencyContact, actorEmail, null, new Dictionary<string, string>
         {
@@ -89,5 +95,8 @@
 
         [MaxLength(200)]
         public string? Address { get; set; }
+
+        [MaxLength(50)]
+        public string? Relationship { get; set; }
     }
 }

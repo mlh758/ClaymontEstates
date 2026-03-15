@@ -15,6 +15,8 @@ public class ApplicationUser : IdentityUser
 
     public DateTime? LastPasswordResetSentAt { get; set; }
 
+    public DateTime? LastLoginAt { get; set; }
+
     public virtual ICollection<ApplicationUserRole> UserRoles { get; set; } = [];
     public virtual ICollection<Address> Addresses { get; set; } = [];
 

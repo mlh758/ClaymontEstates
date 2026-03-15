@@ -40,6 +40,7 @@
                 <RadzenTableHeader>
                     <RadzenTableHeaderRow>
                         <RadzenTableHeaderCell>Name</RadzenTableHeaderCell>
+                        <RadzenTableHeaderCell>Relationship</RadzenTableHeaderCell>
                         <RadzenTableHeaderCell>Phone</RadzenTableHeaderCell>
                         <RadzenTableHeaderCell>Email</RadzenTableHeaderCell>
                         <RadzenTableHeaderCell></RadzenTableHeaderCell>
@@ -50,6 +51,7 @@
                     {
                         <RadzenTableRow>
                             <RadzenTableCell>@contact.Name</RadzenTableCell>
+                            <RadzenTableCell>@contact.Relationship</RadzenTableCell>
                             <RadzenTableCell>@contact.PhoneNumber</RadzenTableCell>
                             <RadzenTableCell>@contact.Email</RadzenTableCell>
                             <RadzenTableCell>
@@ -83,9 +85,7 @@
         if (UserId is not null)
         {
             // Admin route — verify caller is an officer
-            var isOfficer = authState.User.IsInRole(Roles.President)
-                || authState.User.IsInRole(Roles.Treasurer)
-                || authState.User.IsInRole(Roles.Secretary);
+            var isOfficer = Roles.OfficerRoles.Any(r => authState.User.IsInRole(r));
             if (!isOfficer) return;
 
             isAdminView = true;

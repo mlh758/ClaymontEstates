@@ -49,6 +49,11 @@ else
                     <InputText id="contact-address" class="form-control" @bind-Value="model.Address" />
                 </div>
 
+                <div class="mb-3">
+                    <label class="form-label" for="contact-relationship">Relationship</label>
+                    <InputText id="contact-relationship" class="form-control" placeholder="e.g. spouse, neighbor" @bind-Value="model.Relationship" />
+                </div>
+
                 <button type="submit" class="btn btn-primary">Create</button>
                 <a href="/admin/emergency-contacts/@UserId" class="btn btn-secondary ms-2">Cancel</a>
             </EditForm>
@@ -78,7 +83,8 @@ else
             Name: model!.Name,
             PhoneNumber: model.PhoneNumber,
             Email: model.Email,
-            Address: model.Address));
+            Address: model.Address,
+            Relationship: model.Relationship));
 
         var authState = await AuthStateProvider.GetAuthenticationStateAsync();
         var actorEmail = authState.User.FindFirstValue(ClaimTypes.Email) ?? "unknown";
@@ -106,5 +112,8 @@ else
 
         [MaxLength(200)]
         public string? Address { get; set; }
+
+        [MaxLength(50)]
+        public string? Relationship { get; set; }
     }
 }
