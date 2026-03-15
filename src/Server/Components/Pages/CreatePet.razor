@@ -1,0 +1,102 @@
+@page "/pets/create"
+@using System.Security.Claims
+@using System.ComponentModel.DataAnnotations
+@using Microsoft.AspNetCore.Authorization
+@using Server.Data
+@using Server.Services
+@attribute [Authorize]
+
+@inject PetService PetService
+@inject AuditService AuditService
+@inject AuthenticationStateProvider AuthStateProvider
+@inject NavigationManager Nav
+
+<PageTitle>Add Pet</PageTitle>
+
+<div class="card">
+    <div class="card-body">
+        <h1 class="card-title">Add Pet</h1>
+
+        <EditForm Model="model" OnValidSubmit="CreateAsync" FormName="CreatePet">
+            <DataAnnotationsValidator />
+            <ValidationSummary />
+
+            <div class="mb-3">
+                <label class="form-label" for="pet-name">Name</label>
+                <InputText id="pet-name" class="form-control" @bind-Value="model.Name" />
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label" for="pet-species">Species</label>
+                <InputText id="pet-species" class="form-control" @bind-Value="model.Species" />
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label" for="pet-breed">Breed</label>
+                <InputText id="pet-breed" class="form-control" @bind-Value="model.Breed" />
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label" for="pet-weight">Weight (lbs)</label>
+                <InputNumber id="pet-weight" class="form-control" @bind-Value="model.Weight" />
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label" for="pet-description">Description</label>
+                <InputTextArea id="pet-description" class="form-control" rows="3" @bind-Value="model.Description" placeholder="Color, markings, distinguishing features..." />
+            </div>
+
+            <button type="submit" class="btn btn-primary">Create</button>
+            <a href="/pets" class="btn btn-secondary ms-2">Cancel</a>
+        </EditForm>
+    </div>
+</div>
+
+@code {
+    [SupplyParameterFromForm]
+    private PetModel? model { get; set; }
+
+    protected override void OnInitialized() => model ??= new();
+
+    private async Task CreateAsync()
+    {
+        var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+        var userId = authState.User.FindFirstValue(ClaimTypes.NameIdentifier);
+        var actorEmail = authState.User.FindFirstValue(ClaimTypes.Email) ?? "unknown";
+        if (userId is null) return;
+
+        var pet = await PetService.CreateAsync(userId, new PetParams(
+            Name: model!.Name,
+            Description: model.Description,
+            Weight: model.Weight,
+            Species: model.Species,
+            Breed: model.Breed));
+
+        await AuditService.LogAsync(AuditAction.CreatePet, actorEmail, null, new Dictionary<string, string>
+        {
+            ["PetId"] = pet.Id.ToString(),
+            ["PetName"] = model.Name
+        });
+
+        Nav.NavigateTo("/pets");
+    }
+
+    private sealed class PetModel
+    {
+        [Required]
+        [MaxLength(100)]
+        public string Name { get; set; } = "";
+
+        [Required]
+        [MaxLength(50)]
+        public string Species { get; set; } = "";
+
+        [MaxLength(100)]
+        public string? Breed { get; set; }
+
+        public decimal? Weight { get; set; }
+
+        [MaxLength(500)]
+        public string? Description { get; set; }
+    }
+}

@@ -18,7 +18,10 @@ public enum AuditAction
     SendBulkEmail,
     CreateEmergencyContact,
     EditEmergencyContact,
-    DeleteEmergencyContact
+    DeleteEmergencyContact,
+    CreatePet,
+    EditPet,
+    DeletePet
 }
 
 public class AuditEvent

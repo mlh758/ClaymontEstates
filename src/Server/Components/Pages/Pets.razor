@@ -1,0 +1,66 @@
+@page "/pets"
+@using System.Security.Claims
+@using Microsoft.AspNetCore.Authorization
+@using Server.Data
+@using Server.Services
+@attribute [Authorize]
+
+@inject PetService PetService
+@inject AuthenticationStateProvider AuthStateProvider
+
+<PageTitle>My Pets</PageTitle>
+
+<div class="card">
+    <div class="card-body">
+        <h1 class="card-title">My Pets</h1>
+        <p class="text-muted">Pets added here will be searchable on the <a href="/found-pet">Found Pet</a> page. Other residents will be able to see the same contact information you share in the Directory so they can contact you to return your pet if they find it.</p>
+
+        <a href="/pets/create" class="btn btn-primary mb-3">Add Pet</a>
+
+        @if (pets is null)
+        {
+            <p><em>Loading...</em></p>
+        }
+        else if (pets.Count == 0)
+        {
+            <p class="mb-0">No pets registered. Adding your pets helps neighbors return them if they get out!</p>
+        }
+        else
+        {
+            <RadzenTable>
+                <RadzenTableHeader>
+                    <RadzenTableHeaderRow>
+                        <RadzenTableHeaderCell>Name</RadzenTableHeaderCell>
+                        <RadzenTableHeaderCell>Species</RadzenTableHeaderCell>
+                        <RadzenTableHeaderCell></RadzenTableHeaderCell>
+                    </RadzenTableHeaderRow>
+                </RadzenTableHeader>
+                <RadzenTableBody>
+                    @foreach (var pet in pets)
+                    {
+                        <RadzenTableRow>
+                            <RadzenTableCell>@pet.Name</RadzenTableCell>
+                            <RadzenTableCell>@pet.Species</RadzenTableCell>
+                            <RadzenTableCell>
+                                <a href="/pets/edit/@pet.Id" class="btn btn-sm btn-outline-secondary">Edit</a>
+                            </RadzenTableCell>
+                        </RadzenTableRow>
+                    }
+                </RadzenTableBody>
+            </RadzenTable>
+        }
+    </div>
+</div>
+
+@code {
+    private List<Pet>? pets;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+        var userId = authState.User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (userId is null) return;
+
+        pets = await PetService.GetByUserIdAsync(userId);
+    }
+}

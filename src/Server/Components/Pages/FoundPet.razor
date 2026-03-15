@@ -1,0 +1,101 @@
+@page "/found-pet"
+@using Microsoft.AspNetCore.Authorization
+@using Server.Data
+@using Server.Services
+@attribute [Authorize]
+@rendermode InteractiveServer
+@implements IDisposable
+
+@inject PetService PetService
+
+<PageTitle>Found Pet</PageTitle>
+
+<div class="card">
+    <div class="card-body">
+        <h1 class="card-title">Found Pet</h1>
+        <p class="text-muted">Found a pet in the neighborhood? Search here to find the owner.</p>
+
+        <div class="mb-3">
+            <input type="text" class="form-control" placeholder="Describe the pet (e.g. grey cat, golden retriever)..."
+                   @bind="searchQuery" @bind:event="oninput" @bind:after="OnSearchInput" />
+        </div>
+
+        @if (results is null)
+        {
+            <p class="text-muted mb-0">Enter a description to search.</p>
+        }
+        else if (results.Count == 0)
+        {
+            <p class="mb-0">No matching pets found.</p>
+        }
+        else
+        {
+            @foreach (var pet in results)
+            {
+                <RadzenCard class="mb-2">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <h5 class="mb-0 mt-0 text-lg">@pet.Name</h5>
+                        <RadzenBadge Text="@pet.Species" IsPill="true" />
+                    </div>
+                    @if (!string.IsNullOrEmpty(pet.Breed))
+                    {
+                        <p class="mb-1 text-muted">@pet.Breed</p>
+                    }
+                    @if (pet.Weight is not null)
+                    {
+                        <p class="mb-1"><strong>Weight:</strong> @pet.Weight lbs</p>
+                    }
+                    @if (!string.IsNullOrEmpty(pet.Description))
+                    {
+                        <p class="mb-1">@pet.Description</p>
+                    }
+                    <hr class="my-2" />
+                    <p class="mb-0">
+                        <strong>Owner:</strong> @pet.User.FullName
+                        @if (pet.User.ShowContactInfo)
+                        {
+                            @if (!string.IsNullOrEmpty(pet.User.PhoneNumber))
+                            {
+                                <text> — <a href="tel:@pet.User.PhoneNumber">@pet.User.PhoneNumber</a></text>
+                            }
+                            @if (!string.IsNullOrEmpty(pet.User.Email))
+                            {
+                                <text> — <a href="mailto:@pet.User.Email">@pet.User.Email</a></text>
+                            }
+                        }
+                    </p>
+                </RadzenCard>
+            }
+        }
+    </div>
+</div>
+
+@code {
+    private string? searchQuery;
+    private List<Pet>? results;
+    private Timer? debounceTimer;
+
+    private void OnSearchInput()
+    {
+        if (string.IsNullOrWhiteSpace(searchQuery))
+        {
+            results = null;
+            return;
+        }
+
+        debounceTimer?.Dispose();
+        debounceTimer = new Timer(async _ =>
+        {
+            await InvokeAsync(async () =>
+            {
+                results = await PetService.SearchAsync(searchQuery!);
+                StateHasChanged();
+            });
+        }, null, 300, Timeout.Infinite);
+    }
+
+    public void Dispose()
+    {
+        debounceTimer?.Dispose();
+    }
+}

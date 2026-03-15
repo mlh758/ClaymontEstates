@@ -60,6 +60,18 @@
                     </NavLink>
                 </div>
 
+                <div class="nav-item">
+                    <NavLink class="nav-link" href="pets">
+                        <RadzenIcon Icon="pets" class="nav-icon" /> My Pets
+                    </NavLink>
+                </div>
+
+                <div class="nav-item">
+                    <NavLink class="nav-link" href="found-pet">
+                        <RadzenIcon Icon="search" class="nav-icon" /> Found Pet
+                    </NavLink>
+                </div>
+
                 <AuthorizeView Policy="@Roles.OfficerPolicy">
                     <Authorized Context="adminContext">
                         <div class="nav-item">

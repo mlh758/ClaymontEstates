@@ -55,6 +55,7 @@ builder.Services.AddScoped<EventService>();
 builder.Services.AddScoped<AuditService>();
 builder.Services.AddScoped<BulkEmailService>();
 builder.Services.AddScoped<EmergencyContactService>();
+builder.Services.AddScoped<PetService>();
 builder.Services.AddSingleton<HtmlSanitizationService>();
 builder.Services.AddSingleton<EmailOutboxService>();
 builder.Services.AddResiliencePipeline("email-smtp", builder =>

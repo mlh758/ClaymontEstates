@@ -1,0 +1,182 @@
+@page "/pets/edit/{PetId:int}"
+@using System.Security.Claims
+@using System.ComponentModel.DataAnnotations
+@using Microsoft.AspNetCore.Authorization
+@using Server.Data
+@using Server.Services
+@attribute [Authorize]
+@rendermode InteractiveServer
+
+@inject PetService PetService
+@inject AuditService AuditService
+@inject AuthenticationStateProvider AuthStateProvider
+@inject NavigationManager Nav
+@inject IJSRuntime JS
+
+<PageTitle>Edit Pet</PageTitle>
+
+@if (notFound)
+{
+    <p>Pet not found.</p>
+}
+else if (accessDenied)
+{
+    <p>You do not have permission to edit this pet.</p>
+}
+else if (pet is null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <div class="card mb-4">
+        <div class="card-body">
+            <h1 class="card-title">Edit Pet</h1>
+
+            @if (!string.IsNullOrEmpty(message))
+            {
+                <RadzenAlert AlertStyle="@(isError ? AlertStyle.Danger : AlertStyle.Success)" AllowClose="false" ShowIcon="false">@message</RadzenAlert>
+            }
+
+            <EditForm Model="model" OnValidSubmit="SaveAsync">
+                <DataAnnotationsValidator />
+                <ValidationSummary />
+
+                <div class="mb-3">
+                    <label class="form-label" for="pet-name">Name</label>
+                    <InputText id="pet-name" class="form-control" @bind-Value="model.Name" />
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label" for="pet-species">Species</label>
+                    <InputText id="pet-species" class="form-control" @bind-Value="model.Species" />
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label" for="pet-breed">Breed</label>
+                    <InputText id="pet-breed" class="form-control" @bind-Value="model.Breed" />
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label" for="pet-weight">Weight (lbs)</label>
+                    <InputNumber id="pet-weight" class="form-control" @bind-Value="model.Weight" />
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label" for="pet-description">Description</label>
+                    <InputTextArea id="pet-description" class="form-control" rows="3" @bind-Value="model.Description" placeholder="Color, markings, distinguishing features..." />
+                </div>
+
+                <button type="submit" class="btn btn-primary">Save</button>
+                <a href="/pets" class="btn btn-secondary ms-2">Back</a>
+            </EditForm>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-body">
+            <button class="btn btn-danger" @onclick="DeleteAsync">Delete Pet</button>
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter] public int PetId { get; set; }
+
+    private Pet? pet;
+    private PetModel model = new();
+    private string? message;
+    private bool isError;
+    private bool notFound;
+    private bool accessDenied;
+
+    protected override async Task OnInitializedAsync()
+    {
+        pet = await PetService.GetByIdAsync(PetId);
+        if (pet is null)
+        {
+            notFound = true;
+            return;
+        }
+
+        var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+        var userId = authState.User.FindFirstValue(ClaimTypes.NameIdentifier);
+        var isOfficer = Roles.OfficerRoles.Any(r => authState.User.IsInRole(r));
+
+        if (pet.UserId != userId && !isOfficer)
+        {
+            accessDenied = true;
+            return;
+        }
+
+        model = new PetModel
+        {
+            Name = pet.Name,
+            Species = pet.Species,
+            Breed = pet.Breed,
+            Weight = pet.Weight,
+            Description = pet.Description
+        };
+    }
+
+    private async Task SaveAsync()
+    {
+        if (pet is null) return;
+
+        await PetService.UpdateAsync(pet, new PetParams(
+            Name: model.Name,
+            Description: model.Description,
+            Weight: model.Weight,
+            Species: model.Species,
+            Breed: model.Breed));
+
+        var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+        var actorEmail = authState.User.FindFirstValue(ClaimTypes.Email) ?? "unknown";
+        await AuditService.LogAsync(AuditAction.EditPet, actorEmail, null, new Dictionary<string, string>
+        {
+            ["PetId"] = PetId.ToString(),
+            ["PetName"] = model.Name
+        });
+
+        message = "Pet saved.";
+        isError = false;
+    }
+
+    private async Task DeleteAsync()
+    {
+        if (pet is null) return;
+
+        var confirmed = await JS.InvokeAsync<bool>("confirm", $"Are you sure you want to delete {pet.Name}?");
+        if (!confirmed) return;
+
+        var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+        var actorEmail = authState.User.FindFirstValue(ClaimTypes.Email) ?? "unknown";
+        await AuditService.LogAsync(AuditAction.DeletePet, actorEmail, null, new Dictionary<string, string>
+        {
+            ["PetId"] = PetId.ToString(),
+            ["PetName"] = pet.Name
+        });
+
+        await PetService.DeleteAsync(PetId);
+        Nav.NavigateTo("/pets");
+    }
+
+    private sealed class PetModel
+    {
+        [Required]
+        [MaxLength(100)]
+        public string Name { get; set; } = "";
+
+        [Required]
+        [MaxLength(50)]
+        public string Species { get; set; } = "";
+
+        [MaxLength(100)]
+        public string? Breed { get; set; }
+
+        public decimal? Weight { get; set; }
+
+        [MaxLength(500)]
+        public string? Description { get; set; }
+    }
+}

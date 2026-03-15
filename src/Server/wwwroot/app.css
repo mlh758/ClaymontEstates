@@ -21,6 +21,7 @@
     --spacing: 4px;
     --rz-badge-font-weight: 600;
     --rz-badge-padding: 0.25rem 0.5rem;
+    --rz-badge-pill-padding: 0.5rem 0.5rem;
 }
 
 html, body {
