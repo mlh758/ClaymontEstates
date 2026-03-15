@@ -8,7 +8,7 @@ public class BulkEmailService(ApplicationDbContext db, HtmlSanitizationService s
     public async Task<BulkEmail> CreateAsync(string subject, string body, string senderId)
     {
         var recipients = await db.Users
-            .Where(u => u.WantsEmailNotifications)
+            .Where(u => u.WantsEmailNotifications && u.Email != null)
             .Select(u => u.Id)
             .ToListAsync();
 

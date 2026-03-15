@@ -132,7 +132,7 @@
                 <p class="text-muted mb-1">No password reset emails have been sent.</p>
             }
 
-            <button type="button" class="btn btn-warning" @onclick="SendResetEmailAsync">Send Password Reset Email</button>
+            <button type="button" class="btn btn-warning" @onclick="SendResetEmailAsync" disabled="@(string.IsNullOrWhiteSpace(user.Email))">Send Password Reset Email</button>
 
             @if (resetEmailSent)
             {
@@ -235,7 +235,7 @@
 
         await AuditService.LogAsync(AuditAction.EditUser, actorEmail!, null, new Dictionary<string, string>
         {
-            ["TargetEmail"] = model.Email,
+            ["TargetEmail"] = model.Email ?? "",
             ["TargetName"] = model.FullName
         });
 
@@ -288,9 +288,8 @@
         [System.ComponentModel.DataAnnotations.Required]
         public string FullName { get; set; } = "";
 
-        [System.ComponentModel.DataAnnotations.Required]
         [System.ComponentModel.DataAnnotations.EmailAddress]
-        public string Email { get; set; } = "";
+        public string? Email { get; set; }
 
         public string Phone { get; set; } = "";
 

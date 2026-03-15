@@ -15,7 +15,7 @@ public record AddressParams(
 
 public record UserParams(
     string FullName,
-    string Email,
+    string? Email,
     string Phone,
     List<AddressParams> Addresses,
     bool ShowContactInfo = true,
@@ -60,10 +60,11 @@ public class UserService(UserManager<ApplicationUser> userManager, RoleManager<I
 
     public async Task<(bool Success, string[] Errors)> CreateUserAsync(UserParams p, string baseUrl)
     {
+        var hasEmail = !string.IsNullOrWhiteSpace(p.Email);
         var user = new ApplicationUser
         {
-            UserName = p.Email,
-            Email = p.Email,
+            UserName = hasEmail ? p.Email : Guid.NewGuid().ToString(),
+            Email = hasEmail ? p.Email : null,
             FullName = p.FullName,
             PhoneNumber = p.Phone,
             EmailConfirmed = true
@@ -86,16 +87,19 @@ public class UserService(UserManager<ApplicationUser> userManager, RoleManager<I
         await db.SaveChangesAsync();
 
         await userManager.AddToRoleAsync(user, Roles.Resident);
-        await SendPasswordResetEmailAsync(user, baseUrl, isNewAccount: true);
+
+        if (hasEmail)
+            await SendPasswordResetEmailAsync(user, baseUrl, isNewAccount: true);
 
         return (true, []);
     }
 
     public async Task<(bool Success, string[] Errors)> UpdateUserAsync(ApplicationUser user, UserParams p)
     {
+        var hasEmail = !string.IsNullOrWhiteSpace(p.Email);
         user.FullName = p.FullName;
-        user.Email = p.Email;
-        user.UserName = p.Email;
+        user.Email = hasEmail ? p.Email : null;
+        user.UserName = hasEmail ? p.Email : user.UserName;
         user.PhoneNumber = p.Phone;
         user.ShowContactInfo = p.ShowContactInfo;
         user.WantsEmailNotifications = p.WantsEmailNotifications;

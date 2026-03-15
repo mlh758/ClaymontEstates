@@ -8,7 +8,7 @@ public static class CreateUserCommand
     public static Command Build(Option<string> dbOption)
     {
         var nameOption = new Option<string>("--name") { Description = "Full name", Required = true };
-        var emailOption = new Option<string>("--email") { Description = "Email address", Required = true };
+        var emailOption = new Option<string>("--email") { Description = "Email address" };
         var phoneOption = new Option<string>("--phone") { Description = "Phone number" };
         var addressOption = new Option<string[]>("--address") { Description = "Street address (can specify multiple)", Required = true };
         var passwordOption = new Option<string>("--password") { Description = "Password", Required = true };
@@ -26,7 +26,7 @@ public static class CreateUserCommand
         command.SetAction(async (parseResult) =>
         {
             var fullName = parseResult.GetValue(nameOption)!;
-            var email = parseResult.GetValue(emailOption)!;
+            var email = parseResult.GetValue(emailOption);
             var phone = parseResult.GetValue(phoneOption) ?? "";
             var addresses = parseResult.GetValue(addressOption)!;
             var password = parseResult.GetValue(passwordOption)!;
@@ -44,17 +44,22 @@ public static class CreateUserCommand
 
             await using var svc = await AppServices.CreateAsync(dbPath);
 
-            var existing = await svc.UserManager.FindByEmailAsync(email);
-            if (existing is not null)
+            var hasEmail = !string.IsNullOrWhiteSpace(email);
+
+            if (hasEmail)
             {
-                Console.Error.WriteLine($"A user with email '{email}' already exists.");
-                return;
+                var existing = await svc.UserManager.FindByEmailAsync(email!);
+                if (existing is not null)
+                {
+                    Console.Error.WriteLine($"A user with email '{email}' already exists.");
+                    return;
+                }
             }
 
             var user = new ApplicationUser
             {
-                UserName = email,
-                Email = email,
+                UserName = hasEmail ? email! : Guid.NewGuid().ToString(),
+                Email = hasEmail ? email : null,
                 EmailConfirmed = true,
                 FullName = fullName,
                 PhoneNumber = phone
@@ -74,7 +79,8 @@ public static class CreateUserCommand
             await svc.Db.SaveChangesAsync();
 
             await svc.UserManager.AddToRolesAsync(user, roles);
-            Console.WriteLine($"Created user '{fullName}' ({email}) with roles: {string.Join(", ", roles)}.");
+            var emailDisplay = hasEmail ? email! : "no email";
+            Console.WriteLine($"Created user '{fullName}' ({emailDisplay}) with roles: {string.Join(", ", roles)}.");
         });
 
         return command;

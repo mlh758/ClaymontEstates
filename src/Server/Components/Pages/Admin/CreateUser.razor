@@ -20,7 +20,14 @@
         @if (created)
         {
             <RadzenAlert AlertStyle="AlertStyle.Success" AllowClose="false" ShowIcon="false" class="mb-3">
-                User created. An email has been sent with instructions to set their password.
+                @if (string.IsNullOrWhiteSpace(model.Email))
+                {
+                    <text>User created (directory only — no email, no login).</text>
+                }
+                else
+                {
+                    <text>User created. An email has been sent with instructions to set their password.</text>
+                }
             </RadzenAlert>
             <a href="/admin/users" class="btn btn-secondary">Back to Users</a>
         }
@@ -93,7 +100,7 @@
                     <button type="button" class="btn btn-sm btn-outline-secondary" @onclick="() => model.Addresses.Add(new())">Add Address</button>
                 </div>
 
-                <button type="submit" class="btn btn-primary">Create & Send Invite</button>
+                <button type="submit" class="btn btn-primary">@(string.IsNullOrWhiteSpace(model.Email) ? "Create (Directory Only)" : "Create & Send Invite")</button>
                 <a href="/admin/users" class="btn btn-secondary ms-2">Cancel</a>
             </EditForm>
         }
@@ -126,7 +133,7 @@
         {
             await AuditService.LogAsync(AuditAction.CreateUser, actorEmail!, null, new Dictionary<string, string>
             {
-                ["TargetEmail"] = model.Email,
+                ["TargetEmail"] = model.Email ?? "",
                 ["TargetName"] = model.FullName
             });
             created = true;
@@ -142,9 +149,8 @@
         [System.ComponentModel.DataAnnotations.Required]
         public string FullName { get; set; } = "";
 
-        [System.ComponentModel.DataAnnotations.Required]
         [System.ComponentModel.DataAnnotations.EmailAddress]
-        public string Email { get; set; } = "";
+        public string? Email { get; set; }
 
         public string Phone { get; set; } = "";
 
