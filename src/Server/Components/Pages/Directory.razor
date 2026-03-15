@@ -51,11 +51,11 @@
                     {
                         @if (!string.IsNullOrEmpty(resident.Email))
                         {
-                            <p class="mb-1"><strong>Email:</strong> @resident.Email</p>
+                            <p class="mb-1"><strong>Email:</strong> <a href="mailto:@resident.Email">@resident.Email</a></p>
                         }
                         @if (!string.IsNullOrEmpty(resident.PhoneNumber))
                         {
-                            <p class="mb-0"><strong>Phone:</strong> @resident.PhoneNumber</p>
+                            <p class="mb-0"><strong>Phone:</strong> <a href="tel:@resident.PhoneNumber">@resident.PhoneNumber</a></p>
                         }
                     }
                 </RadzenCard>
@@ -83,8 +83,8 @@
                             <RadzenTableCell rowspan="@rowCount" style="vertical-align: middle;">@resident.FullName</RadzenTableCell>
                             <RadzenTableCell rowspan="@rowCount" style="vertical-align: middle;">@(role ?? "")</RadzenTableCell>
                             <RadzenTableCell>@(visibleAddresses.ElementAtOrDefault(0)?.StreetAddress ?? "")</RadzenTableCell>
-                            <RadzenTableCell rowspan="@rowCount" style="vertical-align: middle;">@(showPrivate ? resident.Email : "—")</RadzenTableCell>
-                            <RadzenTableCell rowspan="@rowCount" style="vertical-align: middle;">@(showPrivate ? resident.PhoneNumber : "—")</RadzenTableCell>
+                            <RadzenTableCell rowspan="@rowCount" style="vertical-align: middle;">@if (showPrivate && !string.IsNullOrEmpty(resident.Email)) { <a href="mailto:@resident.Email">@resident.Email</a> } else { <text>—</text> }</RadzenTableCell>
+                            <RadzenTableCell rowspan="@rowCount" style="vertical-align: middle;">@if (showPrivate && !string.IsNullOrEmpty(resident.PhoneNumber)) { <a href="tel:@resident.PhoneNumber">@resident.PhoneNumber</a> } else { <text>—</text> }</RadzenTableCell>
                         </RadzenTableRow>
                         @foreach (var extra in visibleAddresses.Skip(1))
                         {
