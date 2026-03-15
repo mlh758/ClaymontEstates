@@ -10,6 +10,7 @@
 @inject AuditService AuditService
 @inject NavigationManager Nav
 @inject AuthenticationStateProvider AuthStateProvider
+@inject IJSRuntime JS
 
 <PageTitle>Edit User</PageTitle>
 
@@ -125,7 +126,7 @@
             <h5 class="card-title">Password Reset</h5>
             @if (user.LastPasswordResetSentAt is not null)
             {
-                <p class="text-muted mb-1">Last password reset sent: @user.LastPasswordResetSentAt.Value.ToLocalTime().ToString("MMM d, yyyy h:mm tt")</p>
+                <p class="text-muted mb-1">Last password reset sent: @FormatLocal(user.LastPasswordResetSentAt.Value)</p>
             }
             else
             {
@@ -164,6 +165,22 @@
     private bool isError;
     private bool resetEmailSent;
     private string? actorEmail;
+    private TimeSpan browserUtcOffset;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            var offsetMinutes = await JS.InvokeAsync<int>("eval", "new Date().getTimezoneOffset()");
+            browserUtcOffset = TimeSpan.FromMinutes(-offsetMinutes);
+            StateHasChanged();
+        }
+    }
+
+    private string FormatLocal(DateTime utcDateTime)
+    {
+        return utcDateTime.Add(browserUtcOffset).ToString("MMM d, yyyy h:mm tt");
+    }
 
     protected override async Task OnInitializedAsync()
     {
@@ -263,6 +280,9 @@
     {
         if (user is null) return;
 
+        var confirmed = await JS.InvokeAsync<bool>("confirm", $"Are you sure you want to delete {user.FullName}? This cannot be undone.");
+        if (!confirmed) return;
+
         var targetEmail = user.Email ?? "";
         var targetName = user.FullName;
 
@@ -288,8 +308,14 @@
         [System.ComponentModel.DataAnnotations.Required]
         public string FullName { get; set; } = "";
 
+        private string? _email;
+
         [System.ComponentModel.DataAnnotations.EmailAddress]
-        public string? Email { get; set; }
+        public string? Email
+        {
+            get => _email;
+            set => _email = string.IsNullOrWhiteSpace(value) ? null : value;
+        }
 
         public string Phone { get; set; } = "";
 

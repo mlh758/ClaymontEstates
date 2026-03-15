@@ -149,8 +149,14 @@
         [System.ComponentModel.DataAnnotations.Required]
         public string FullName { get; set; } = "";
 
+        private string? _email;
+
         [System.ComponentModel.DataAnnotations.EmailAddress]
-        public string? Email { get; set; }
+        public string? Email
+        {
+            get => _email;
+            set => _email = string.IsNullOrWhiteSpace(value) ? null : value;
+        }
 
         public string Phone { get; set; } = "";
 
