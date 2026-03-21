@@ -1,0 +1,133 @@
+@page "/admin/documents/edit/{DocumentId:int}"
+@using System.Security.Claims
+@using System.ComponentModel.DataAnnotations
+@using Microsoft.AspNetCore.Authorization
+@using Server.Data
+@using Server.Services
+@attribute [Authorize(Policy = Roles.OfficerPolicy)]
+@rendermode InteractiveServer
+
+@inject DocumentService DocumentService
+@inject AuditService AuditService
+@inject AuthenticationStateProvider AuthStateProvider
+@inject NavigationManager Nav
+
+<PageTitle>Edit Document</PageTitle>
+
+@if (doc is null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <div class="card mb-4">
+        <div class="card-body">
+            <h1 class="card-title">Edit Document</h1>
+
+            @if (!string.IsNullOrEmpty(message))
+            {
+                <RadzenAlert AlertStyle="@(isError ? AlertStyle.Danger : AlertStyle.Success)" AllowClose="false" ShowIcon="false">@message</RadzenAlert>
+            }
+
+            <EditForm Model="model" OnValidSubmit="SaveAsync">
+                <DataAnnotationsValidator />
+                <ValidationSummary />
+
+                <div class="mb-3">
+                    <label class="form-label" for="doc-name">Title</label>
+                    <InputText id="doc-name" class="form-control" @bind-Value="model.Name" />
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label" for="doc-description">Description</label>
+                    <InputTextArea id="doc-description" class="form-control" rows="3" @bind-Value="model.Description" />
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label" for="doc-date">Effective Date</label>
+                    <InputDate id="doc-date" class="form-control" @bind-Value="model.EffectiveDate" />
+                </div>
+
+                <p class="text-muted mb-3">File: @doc.FileName (uploaded by @doc.UploadedByEmail on @doc.UploadedAt.ToString("yyyy-MM-dd"))</p>
+
+                <button type="submit" class="btn btn-primary">Save</button>
+                <a href="/documents" class="btn btn-secondary ms-2">Back</a>
+            </EditForm>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-body">
+            <button class="btn btn-danger" @onclick="DeleteAsync">Delete Document</button>
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter] public int DocumentId { get; set; }
+
+    private Document? doc;
+    private DocumentModel model = new();
+    private string? message;
+    private bool isError;
+
+    protected override async Task OnInitializedAsync()
+    {
+        doc = await DocumentService.GetByIdAsync(DocumentId);
+        if (doc is null) return;
+
+        model = new DocumentModel
+        {
+            Name = doc.Name,
+            Description = doc.Description,
+            EffectiveDate = doc.EffectiveDate
+        };
+    }
+
+    private async Task SaveAsync()
+    {
+        if (doc is null) return;
+
+        await DocumentService.UpdateAsync(doc, model.Name, model.Description, model.EffectiveDate);
+
+        var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+        var actorEmail = authState.User.FindFirstValue(ClaimTypes.Email) ?? "unknown";
+        await AuditService.LogAsync(AuditAction.EditDocument, actorEmail, null, new Dictionary<string, string>
+        {
+            ["DocumentName"] = model.Name,
+            ["DocumentId"] = DocumentId.ToString()
+        });
+
+        message = "Document updated.";
+        isError = false;
+    }
+
+    private async Task DeleteAsync()
+    {
+        if (doc is null) return;
+
+        var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+        var actorEmail = authState.User.FindFirstValue(ClaimTypes.Email) ?? "unknown";
+        await AuditService.LogAsync(AuditAction.DeleteDocument, actorEmail, null, new Dictionary<string, string>
+        {
+            ["DocumentName"] = doc.Name,
+            ["DocumentId"] = DocumentId.ToString()
+        });
+
+        await DocumentService.DeleteAsync(DocumentId);
+        Nav.NavigateTo("/documents");
+    }
+
+    private sealed class DocumentModel
+    {
+        [Required]
+        [MaxLength(200)]
+        public string Name { get; set; } = "";
+
+        [MaxLength(500)]
+        public string? Description { get; set; }
+
+        [Required]
+        public DateTime EffectiveDate { get; set; }
+    }
+}

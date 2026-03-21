@@ -68,6 +68,14 @@ public class DocumentService(ApplicationDbContext db, IConfiguration config)
         return (true, null, document);
     }
 
+    public async Task UpdateAsync(Document document, string name, string? description, DateTime effectiveDate)
+    {
+        document.Name = name;
+        document.Description = description;
+        document.EffectiveDate = effectiveDate;
+        await db.SaveChangesAsync();
+    }
+
     public async Task<(bool Success, string? Error)> DeleteAsync(int id)
     {
         var document = await db.Documents.FindAsync(id);

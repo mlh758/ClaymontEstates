@@ -37,7 +37,14 @@
                 <RadzenCard class="mb-2">
                     <div class="d-flex justify-content-between align-items-start">
                         <h5 class="mb-0 mt-0 text-lg">@doc.Name</h5>
-                        <a href="/api/documents/@doc.Id/download" class="btn btn-sm btn-outline-primary">Download</a>
+                        <div>
+                            <AuthorizeView Policy="@Roles.OfficerPolicy">
+                                <Authorized>
+                                    <a href="/admin/documents/edit/@doc.Id" class="btn btn-sm btn-outline-secondary me-1">Edit</a>
+                                </Authorized>
+                            </AuthorizeView>
+                            <a href="/api/documents/@doc.Id/download" class="btn btn-sm btn-outline-primary">Download</a>
+                        </div>
                     </div>
                     @if (!string.IsNullOrEmpty(doc.Description))
                     {
@@ -69,6 +76,11 @@
                             <RadzenTableCell>@doc.EffectiveDate.ToString("yyyy-MM-dd")</RadzenTableCell>
                             <RadzenTableCell>@doc.UploadedByEmail</RadzenTableCell>
                             <RadzenTableCell>
+                                <AuthorizeView Policy="@Roles.OfficerPolicy">
+                                    <Authorized>
+                                        <a href="/admin/documents/edit/@doc.Id" class="btn btn-sm btn-outline-secondary me-1">Edit</a>
+                                    </Authorized>
+                                </AuthorizeView>
                                 <a href="/api/documents/@doc.Id/download" class="btn btn-sm btn-outline-primary">Download</a>
                             </RadzenTableCell>
                         </RadzenTableRow>

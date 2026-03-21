@@ -11,6 +11,7 @@ public enum AuditAction
     DeleteUser,
     SendPasswordReset,
     UploadDocument,
+    EditDocument,
     DeleteDocument,
     CreateEvent,
     EditEvent,
