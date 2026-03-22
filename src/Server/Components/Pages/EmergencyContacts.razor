@@ -16,12 +16,12 @@
     <div class="card-body">
         @if (isAdminView && targetUser is not null)
         {
-            <h1 class="card-title">Emergency Contacts</h1>
+            <RadzenText TextStyle="TextStyle.H1" TagName="TagName.H1" class="card-title">Emergency Contacts</RadzenText>
             <p class="text-muted">For @targetUser.FullName (@targetUser.AddressDisplay(true))</p>
         }
         else
         {
-            <h1 class="card-title">My Emergency Contacts</h1>
+            <RadzenText TextStyle="TextStyle.H1" TagName="TagName.H1" class="card-title">My Emergency Contacts</RadzenText>
             <p class="text-muted">Only HOA officers can view your emergency contacts.</p>
         }
 

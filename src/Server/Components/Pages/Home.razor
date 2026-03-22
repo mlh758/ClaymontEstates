@@ -7,13 +7,22 @@
 
 <PageTitle>Claymont Estates</PageTitle>
 
-<div class="card mb-4">
-    <div class="card-body">
-        <h1 class="card-title">Claymont Estates Resident Portal</h1>
-        <p class="mb-2">Log in to access the neighborhood directory, HOA documents, and community events.</p>
-        <p class="mb-0">If you're a resident and don't have an account yet, please contact an HOA officer to get set up.</p>
+<RadzenCard Variant="Variant.Filled" class="mb-4">
+    <RadzenText TextStyle="TextStyle.H1" TagName="TagName.H1">Claymont Estates</RadzenText>
+    <RadzenText TextStyle="TextStyle.Subtitle1" TagName="TagName.P" style="color: var(--rz-text-secondary-color);">Resident Portal</RadzenText>
+
+    <RadzenText TextStyle="TextStyle.Body1" class="rz-mt-4 rz-mb-2">Log in to access the neighborhood directory, HOA documents, and community events.</RadzenText>
+    <RadzenText TextStyle="TextStyle.Body1">If you're a resident and don't have an account yet, please contact an HOA officer to get set up.</RadzenText>
+
+    <div class="home-buttons rz-mt-6">
+        <a href="/directory" class="rz-button rz-button-lg rz-variant-filled rz-primary">
+            <RadzenIcon Icon="contacts" /> Directory
+        </a>
+        <a href="/documents" class="rz-button rz-button-lg rz-variant-filled rz-secondary">
+            <RadzenIcon Icon="folder" /> Documents
+        </a>
     </div>
-</div>
+</RadzenCard>
 
 @if (events is not null && events.Count > 0)
 {

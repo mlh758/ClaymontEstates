@@ -22,6 +22,9 @@
     --rz-badge-font-weight: 600;
     --rz-badge-padding: 0.25rem 0.5rem;
     --rz-badge-pill-padding: 0.5rem 0.5rem;
+    --rz-text-font-family: 'Source Sans 3', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    --rz-text-h1-font-size: clamp(2.25rem, 3.333vw, 3rem);
+    --rz-text-h2-font-size: clamp(2.25rem, 3.333vw, 3rem);
 }
 
 html, body {

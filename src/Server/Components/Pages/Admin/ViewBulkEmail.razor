@@ -17,7 +17,7 @@
         }
         else
         {
-            <h1 class="card-title">@bulkEmail.Subject</h1>
+            <RadzenText TextStyle="TextStyle.H1" TagName="TagName.H1" class="card-title">@bulkEmail.Subject</RadzenText>
 
             <div class="text-muted mb-3">
                 Sent by @bulkEmail.Sender.FullName on @bulkEmail.CreatedAt.ToLocalTime().ToString("MMM d, yyyy h:mm tt")
