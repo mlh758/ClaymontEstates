@@ -23,8 +23,8 @@
                 <RadzenTableHeader>
                     <RadzenTableHeaderRow>
                         <RadzenTableHeaderCell>Name</RadzenTableHeaderCell>
-                        <RadzenTableHeaderCell>Address</RadzenTableHeaderCell>
-                        <RadzenTableHeaderCell>Contacts</RadzenTableHeaderCell>
+                        <RadzenTableHeaderCell class="hide-narrow">Address</RadzenTableHeaderCell>
+                        <RadzenTableHeaderCell class="hide-narrow">Contacts</RadzenTableHeaderCell>
                         <RadzenTableHeaderCell></RadzenTableHeaderCell>
                     </RadzenTableHeaderRow>
                 </RadzenTableHeader>
@@ -33,8 +33,8 @@
                     {
                         <RadzenTableRow>
                             <RadzenTableCell><a href="/admin/users/@user.Id">@user.FullName</a></RadzenTableCell>
-                            <RadzenTableCell>@user.AddressDisplay(true)</RadzenTableCell>
-                            <RadzenTableCell>@(contactCounts.GetValueOrDefault(user.Id))</RadzenTableCell>
+                            <RadzenTableCell class="hide-narrow">@user.AddressDisplay(true)</RadzenTableCell>
+                            <RadzenTableCell class="hide-narrow">@(contactCounts.GetValueOrDefault(user.Id))</RadzenTableCell>
                             <RadzenTableCell>
                                 <a href="/admin/emergency-contacts/@user.Id"><RadzenButton Text="Manage" ButtonStyle="ButtonStyle.Secondary" Variant="Variant.Outlined" Size="ButtonSize.Small" /></a>
                             </RadzenTableCell>

@@ -1,0 +1,9 @@
+::deep .hide-narrow {
+    display: table-cell;
+}
+
+@media (max-width: 768px) {
+    ::deep .hide-narrow {
+        display: none;
+    }
+}

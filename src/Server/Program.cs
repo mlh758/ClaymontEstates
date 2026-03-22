@@ -8,6 +8,7 @@ using Server.Components.Account;
 using Server.Data;
 using Polly;
 using Radzen;
+using Microsoft.AspNetCore.HttpOverrides;
 using Server.Services;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -112,6 +113,11 @@ builder.Services.AddRateLimiter(options =>
 });
 
 var app = builder.Build();
+
+app.UseForwardedHeaders(new ForwardedHeadersOptions
+{
+    ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto
+});
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
