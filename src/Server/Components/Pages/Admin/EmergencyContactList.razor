@@ -36,7 +36,7 @@
                             <RadzenTableCell>@user.AddressDisplay(true)</RadzenTableCell>
                             <RadzenTableCell>@(contactCounts.GetValueOrDefault(user.Id))</RadzenTableCell>
                             <RadzenTableCell>
-                                <a href="/admin/emergency-contacts/@user.Id" class="btn btn-sm btn-outline-secondary">Manage</a>
+                                <a href="/admin/emergency-contacts/@user.Id"><RadzenButton Text="Manage" ButtonStyle="ButtonStyle.Secondary" Variant="Variant.Outlined" Size="ButtonSize.Small" /></a>
                             </RadzenTableCell>
                         </RadzenTableRow>
                     }

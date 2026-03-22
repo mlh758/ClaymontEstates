@@ -4,7 +4,7 @@
     gap: 0.75rem;
 }
 
-.home-buttons .rz-button {
+.home-buttons a {
     width: 100%;
     justify-content: center;
 }
@@ -15,7 +15,7 @@
         justify-content: space-between;
     }
 
-    .home-buttons .rz-button {
+    .home-buttons a {
         width: auto;
     }
 }

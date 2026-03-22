@@ -12,7 +12,7 @@
     <div class="card-body">
         <RadzenText TextStyle="TextStyle.H1" TagName="TagName.H1" class="card-title">Manage Events</RadzenText>
 
-        <a href="/admin/events/create" class="btn btn-primary mb-3">Create Event</a>
+        <a href="/admin/events/create" class="rz-mb-6"><RadzenButton Text="Create Event" ButtonStyle="ButtonStyle.Primary" /></a>
 
         @if (events is null)
         {
@@ -20,7 +20,7 @@
         }
         else if (events.Count == 0)
         {
-            <p class="mb-0">No events in the last 30 days or next 90 days.</p>
+            <p class="rz-mb-0">No events in the last 30 days or next 90 days.</p>
         }
         else
         {
@@ -42,10 +42,10 @@
                             <RadzenTableCell>@evt.Date.ToLocalTime().ToString("MMM d, yyyy h:mm tt")</RadzenTableCell>
                             <RadzenTableCell>@FormatDuration(evt.Duration)</RadzenTableCell>
                             <RadzenTableCell>
-                                <a href="/admin/events/edit/@evt.Id" class="btn btn-sm btn-outline-secondary">Edit</a>
+                                <a href="/admin/events/edit/@evt.Id"><RadzenButton Text="Edit" ButtonStyle="ButtonStyle.Secondary" Variant="Variant.Outlined" Size="ButtonSize.Small" /></a>
                                 @if (evt.RequiresRsvp)
                                 {
-                                    <a href="/admin/events/@evt.Id/attendees" class="btn btn-sm btn-outline-secondary ms-1">Attendees</a>
+                                    <a href="/admin/events/@evt.Id/attendees" class="rz-ms-1"><RadzenButton Text="Attendees" ButtonStyle="ButtonStyle.Secondary" Variant="Variant.Outlined" Size="ButtonSize.Small" /></a>
                                 }
                             </RadzenTableCell>
                         </RadzenTableRow>

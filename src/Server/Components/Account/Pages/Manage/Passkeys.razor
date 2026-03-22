@@ -29,8 +29,8 @@
                             <AntiforgeryToken />
                             <div>
                                 <input type="hidden" name="CredentialId" value="@credentialId" />
-                                <button type="submit" name="Action" value="rename" class="btn btn-primary" title="Rename this passkey">Rename</button>
-                                <button type="submit" name="Action" value="delete" class="btn btn-danger" title="Remove this passkey from your account">Delete</button>
+                                <button type="submit" name="Action" value="rename" class="rz-button rz-variant-filled rz-primary rz-shade-default rz-py-2 rz-px-4" title="Rename this passkey"><span class="rz-button-box"><span class="rz-button-text">Rename</span></span></button>
+                                <button type="submit" name="Action" value="delete" class="rz-button rz-variant-filled rz-danger rz-shade-default rz-py-2 rz-px-4" title="Remove this passkey from your account"><span class="rz-button-box"><span class="rz-button-text">Delete</span></span></button>
                             </div>
                         </form>
                     </RadzenTableCell>
@@ -44,7 +44,7 @@ else
     <p>No passkeys are registered.</p>
 }
 
-<form @formname="add-passkey" @onsubmit="AddPasskey" method="post" class="mt-3">
+<form @formname="add-passkey" @onsubmit="AddPasskey" method="post" class="rz-mt-6">
     <AntiforgeryToken />
     @if (currentPasskeys is { Count: >= MaxPasskeyCount })
     {
@@ -52,7 +52,7 @@ else
     }
     else
     {
-        <PasskeySubmit Operation="PasskeyOperation.Create" Name="Input" class="btn btn-primary">Add a new passkey</PasskeySubmit>
+        <PasskeySubmit Operation="PasskeyOperation.Create" Name="Input" class="rz-button rz-variant-filled rz-primary rz-py-2 rz-px-4">Add a new passkey</PasskeySubmit>
     }
 
 </form>

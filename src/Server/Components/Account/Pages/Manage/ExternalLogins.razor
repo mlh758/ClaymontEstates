@@ -29,7 +29,7 @@
                                 <div>
                                     <input type="hidden" name="@nameof(LoginProvider)" value="@login.LoginProvider" />
                                     <input type="hidden" name="@nameof(ProviderKey)" value="@login.ProviderKey" />
-                                    <button type="submit" class="btn btn-primary" title="Remove this @login.ProviderDisplayName login from your account">Remove</button>
+                                    <RadzenButton ButtonType="ButtonType.Submit" Text="Remove" ButtonStyle="ButtonStyle.Primary" title="@($"Remove this {login.ProviderDisplayName} login from your account")" />
                                 </div>
                             </form>
                         }
@@ -53,8 +53,8 @@
             <p>
                 @foreach (var provider in otherLogins)
                 {
-                    <button type="submit" class="btn btn-primary" name="Provider" value="@provider.Name" title="Log in using your @provider.DisplayName account">
-                        @provider.DisplayName
+                    <button type="submit" class="rz-button rz-variant-filled rz-primary rz-shade-default rz-py-2 rz-px-4" name="Provider" value="@provider.Name" title="Log in using your @provider.DisplayName account">
+                        <span class="rz-button-box"><span class="rz-button-text">@provider.DisplayName</span></span>
                     </button>
                 }
             </p>

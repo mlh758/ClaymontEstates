@@ -19,11 +19,11 @@
         {
             <RadzenText TextStyle="TextStyle.H1" TagName="TagName.H1" class="card-title">@bulkEmail.Subject</RadzenText>
 
-            <div class="text-muted mb-3">
+            <div class="text-muted rz-mb-6">
                 Sent by @bulkEmail.Sender.FullName on @bulkEmail.CreatedAt.ToLocalTime().ToString("MMM d, yyyy h:mm tt")
             </div>
 
-            <div class="mb-4">
+            <div class="rz-mb-6">
                 @((MarkupString)Sanitizer.Sanitize(bulkEmail.Body))
             </div>
 
@@ -62,7 +62,7 @@
             </RadzenTable>
         }
 
-        <a href="/admin/emails" class="btn btn-secondary mt-3">Back to Emails</a>
+        <a href="/admin/emails" class="rz-mt-6"><RadzenButton Text="Back to Emails" ButtonStyle="ButtonStyle.Secondary" /></a>
     </div>
 </div>
 

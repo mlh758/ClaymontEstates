@@ -12,13 +12,13 @@
 
 <PageTitle>Events</PageTitle>
 
-<div class="card mb-4">
+<div class="card rz-mb-6">
     <div class="card-body">
         <RadzenText TextStyle="TextStyle.H1" TagName="TagName.H1" class="card-title">Events</RadzenText>
         <div class="d-flex align-items-center" style="gap: calc(var(--spacing) * 6)">
-            <button class="btn btn-outline-secondary btn-sm" @onclick="PreviousMonth">&laquo; Previous</button>
+            <RadzenButton Text="« Previous" ButtonStyle="ButtonStyle.Primary" Size="ButtonSize.Small" Click="PreviousMonth" />
             <h4>@currentMonth.ToString("MMMM yyyy")</h4>
-            <button class="btn btn-outline-secondary btn-sm" @onclick="NextMonth">Next &raquo;</button>
+            <RadzenButton Text="Next »" ButtonStyle="ButtonStyle.Primary" Size="ButtonSize.Small" Click="NextMonth" />
         </div>
     </div>
 </div>
@@ -44,11 +44,11 @@ else
                     @if (attending)
                     {
                         <RadzenBadge Text="You're going" BadgeStyle="BadgeStyle.Success" />
-                        <button class="btn btn-sm btn-outline-danger" @onclick="() => CancelRsvpAsync(summary)">Cancel</button>
+                        <RadzenButton Text="Cancel" ButtonStyle="ButtonStyle.Danger" Variant="Variant.Outlined" Size="ButtonSize.Small" Click="() => CancelRsvpAsync(summary)" />
                     }
                     else
                     {
-                        <button class="btn btn-sm btn-primary" @onclick="() => RsvpAsync(summary)">RSVP</button>
+                        <RadzenButton Text="RSVP" ButtonStyle="ButtonStyle.Primary" Size="ButtonSize.Small" Click="() => RsvpAsync(summary)" />
                     }
                 </div>
             }

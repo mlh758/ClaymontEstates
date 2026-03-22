@@ -23,7 +23,7 @@ else
         <p>
             If you lose your device and don't have the recovery codes you will lose access to your account.
         </p>
-        <p class="mb-0">
+        <p class="rz-mb-0">
             Generating new recovery codes does not change the keys used in authenticator apps. If you wish to change the key
             used in an authenticator app you should <a href="Account/Manage/ResetAuthenticator">reset your authenticator keys.</a>
         </p>
@@ -31,7 +31,7 @@ else
     <div>
         <form @formname="generate-recovery-codes" @onsubmit="OnSubmitAsync" method="post">
             <AntiforgeryToken />
-            <button class="btn btn-danger" type="submit">Generate Recovery Codes</button>
+            <RadzenButton ButtonType="ButtonType.Submit" Text="Generate Recovery Codes" ButtonStyle="ButtonStyle.Danger" />
         </form>
     </div>
 }

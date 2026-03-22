@@ -23,12 +23,12 @@
             <DataAnnotationsValidator />
             <ValidationSummary />
 
-            <div class="mb-3">
+            <div class="rz-mb-6">
                 <label class="form-label" for="email-subject">Subject</label>
                 <InputText id="email-subject" class="form-control" @bind-Value="model.Subject" />
             </div>
 
-            <div class="mb-3">
+            <div class="rz-mb-6">
                 <label class="form-label">Body</label>
                 <RadzenHtmlEditor @bind-Value="model.Body" style="height: 300px;">
                     <RadzenHtmlEditorUndo />
@@ -51,8 +51,8 @@
                 </RadzenHtmlEditor>
             </div>
 
-            <button type="submit" class="btn btn-primary">Send Email</button>
-            <a href="/admin/emails" class="btn btn-secondary ms-2">Cancel</a>
+            <RadzenButton ButtonType="ButtonType.Submit" Text="Send Email" ButtonStyle="ButtonStyle.Primary" />
+            <a href="/admin/emails" class="rz-ms-2"><RadzenButton Text="Cancel" ButtonStyle="ButtonStyle.Secondary" /></a>
         </EditForm>
     </div>
 </div>

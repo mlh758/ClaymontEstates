@@ -21,33 +21,33 @@
             <DataAnnotationsValidator />
             <ValidationSummary />
 
-            <div class="mb-3">
+            <div class="rz-mb-6">
                 <label class="form-label" for="contact-name">Name</label>
                 <InputText id="contact-name" class="form-control" @bind-Value="model.Name" />
             </div>
 
-            <div class="mb-3">
+            <div class="rz-mb-6">
                 <label class="form-label" for="contact-phone">Phone Number</label>
                 <InputText id="contact-phone" type="tel" class="form-control" @bind-Value="model.PhoneNumber" />
             </div>
 
-            <div class="mb-3">
+            <div class="rz-mb-6">
                 <label class="form-label" for="contact-email">Email</label>
                 <InputText id="contact-email" type="email" class="form-control" @bind-Value="model.Email" />
             </div>
 
-            <div class="mb-3">
+            <div class="rz-mb-6">
                 <label class="form-label" for="contact-address">Address</label>
                 <InputText id="contact-address" class="form-control" @bind-Value="model.Address" />
             </div>
 
-            <div class="mb-3">
+            <div class="rz-mb-6">
                 <label class="form-label" for="contact-relationship">Relationship</label>
                 <InputText id="contact-relationship" class="form-control" placeholder="e.g. spouse, neighbor" @bind-Value="model.Relationship" />
             </div>
 
-            <button type="submit" class="btn btn-primary">Create</button>
-            <a href="/emergency-contacts" class="btn btn-secondary ms-2">Cancel</a>
+            <RadzenButton ButtonType="ButtonType.Submit" Text="Create" ButtonStyle="ButtonStyle.Primary" />
+            <a href="/emergency-contacts" class="rz-ms-2"><RadzenButton Text="Cancel" ButtonStyle="ButtonStyle.Secondary" /></a>
         </EditForm>
     </div>
 </div>

@@ -25,13 +25,13 @@
         <ValidationSummary class="text-danger" role="alert" />
         @if (requirePassword)
         {
-            <div class="mb-3">
+            <div class="rz-mb-6">
                 <label for="Input.Password" class="form-label">Password</label>
                 <InputText type="password" @bind-Value="Input.Password" id="Input.Password" class="form-control" autocomplete="current-password" aria-required="true" />
                 <ValidationMessage For="() => Input.Password" class="text-danger" />
             </div>
         }
-        <button class="w-100 btn btn-lg btn-danger" type="submit">Delete data and close my account</button>
+        <RadzenButton ButtonType="ButtonType.Submit" Text="Delete data and close my account" ButtonStyle="ButtonStyle.Danger" Size="ButtonSize.Large" Style="width:100%" />
     </EditForm>
 </div>
 

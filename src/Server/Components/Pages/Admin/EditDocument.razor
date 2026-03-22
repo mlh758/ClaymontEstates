@@ -20,7 +20,7 @@
 }
 else
 {
-    <div class="card mb-4">
+    <div class="card rz-mb-6">
         <div class="card-body">
             <RadzenText TextStyle="TextStyle.H1" TagName="TagName.H1" class="card-title">Edit Document</RadzenText>
 
@@ -33,32 +33,32 @@ else
                 <DataAnnotationsValidator />
                 <ValidationSummary />
 
-                <div class="mb-3">
+                <div class="rz-mb-6">
                     <label class="form-label" for="doc-name">Title</label>
                     <InputText id="doc-name" class="form-control" @bind-Value="model.Name" />
                 </div>
 
-                <div class="mb-3">
+                <div class="rz-mb-6">
                     <label class="form-label" for="doc-description">Description</label>
                     <InputTextArea id="doc-description" class="form-control" rows="3" @bind-Value="model.Description" />
                 </div>
 
-                <div class="mb-3">
+                <div class="rz-mb-6">
                     <label class="form-label" for="doc-date">Effective Date</label>
                     <InputDate id="doc-date" class="form-control" @bind-Value="model.EffectiveDate" />
                 </div>
 
-                <p class="text-muted mb-3">File: @doc.FileName (uploaded by @doc.UploadedByEmail on @doc.UploadedAt.ToString("yyyy-MM-dd"))</p>
+                <p class="text-muted rz-mb-6">File: @doc.FileName (uploaded by @doc.UploadedByEmail on @doc.UploadedAt.ToString("yyyy-MM-dd"))</p>
 
-                <button type="submit" class="btn btn-primary">Save</button>
-                <a href="/documents" class="btn btn-secondary ms-2">Back</a>
+                <RadzenButton ButtonType="ButtonType.Submit" Text="Save" ButtonStyle="ButtonStyle.Primary" />
+                <a href="/documents" class="rz-ms-2"><RadzenButton Text="Back" ButtonStyle="ButtonStyle.Secondary" /></a>
             </EditForm>
         </div>
     </div>
 
     <div class="card">
         <div class="card-body">
-            <button class="btn btn-danger" @onclick="DeleteAsync">Delete Document</button>
+            <RadzenButton Text="Delete Document" ButtonStyle="ButtonStyle.Danger" Click="DeleteAsync" />
         </div>
     </div>
 }

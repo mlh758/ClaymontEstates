@@ -22,12 +22,12 @@
             <DataAnnotationsValidator />
             <ValidationSummary />
 
-            <div class="mb-3">
+            <div class="rz-mb-6">
                 <label class="form-label" for="event-name">Name</label>
                 <InputText id="event-name" class="form-control" @bind-Value="model.Name" />
             </div>
 
-            <div class="mb-3">
+            <div class="rz-mb-6">
                 <label class="form-label">Description</label>
                 <RadzenHtmlEditor @bind-Value="model.Description" style="height: 250px;">
                     <RadzenHtmlEditorUndo />
@@ -50,12 +50,12 @@
                 </RadzenHtmlEditor>
             </div>
 
-            <div class="mb-3">
+            <div class="rz-mb-6">
                 <label class="form-label" for="event-location">Location</label>
                 <InputText id="event-location" class="form-control" @bind-Value="model.Location" />
             </div>
 
-            <div class="row mb-3">
+            <div class="row rz-mb-6">
                 <div class="col-md-4">
                     <label class="form-label" for="event-date">Date</label>
                     <InputDate id="event-date" class="form-control" @bind-Value="model.Date" />
@@ -70,18 +70,18 @@
                 </div>
             </div>
 
-            <div class="mb-3 form-check">
+            <div class="rz-mb-6 form-check">
                 <InputCheckbox id="event-public" class="form-check-input" @bind-Value="model.IsPublic" />
                 <label class="form-check-label" for="event-public">Public event (visible on home page)</label>
             </div>
 
-            <div class="mb-3 form-check">
+            <div class="rz-mb-6 form-check">
                 <InputCheckbox id="event-rsvp" class="form-check-input" @bind-Value="model.RequiresRsvp" />
                 <label class="form-check-label" for="event-rsvp">Require RSVP</label>
             </div>
 
-            <button type="submit" class="btn btn-primary">Create Event</button>
-            <a href="/admin/events" class="btn btn-secondary ms-2">Cancel</a>
+            <RadzenButton ButtonType="ButtonType.Submit" Text="Create Event" ButtonStyle="ButtonStyle.Primary" />
+            <a href="/admin/events" class="rz-ms-2"><RadzenButton Text="Cancel" ButtonStyle="ButtonStyle.Secondary" /></a>
         </EditForm>
     </div>
 </div>

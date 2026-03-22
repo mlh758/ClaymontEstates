@@ -20,13 +20,13 @@
     }
     <hr />
     <ValidationSummary class="text-danger" role="alert" />
-    <div class="mb-3">
+    <div class="rz-mb-6">
         <label for="Input.Name" class="form-label">Passkey name</label>
         <InputText @bind-Value="Input.Name" id="Input.Name" class="form-control" aria-required="true" />
         <ValidationMessage For="() => Input.Name" class="text-danger" />
     </div>
     <div>
-        <button type="submit" class="w-100 btn btn-lg btn-primary">Continue</button>
+        <RadzenButton ButtonType="ButtonType.Submit" Text="Continue" ButtonStyle="ButtonStyle.Primary" Size="ButtonSize.Large" Style="width:100%" />
     </div>
 </EditForm>
 

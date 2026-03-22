@@ -19,7 +19,7 @@
 
         @if (created)
         {
-            <RadzenAlert AlertStyle="AlertStyle.Success" AllowClose="false" ShowIcon="false" class="mb-3">
+            <RadzenAlert AlertStyle="AlertStyle.Success" AllowClose="false" ShowIcon="false" class="rz-mb-6">
                 @if (string.IsNullOrWhiteSpace(model.Email))
                 {
                     <text>User created (directory only — no email, no login).</text>
@@ -29,7 +29,7 @@
                     <text>User created. An email has been sent with instructions to set their password.</text>
                 }
             </RadzenAlert>
-            <a href="/admin/users" class="btn btn-secondary">Back to Users</a>
+            <a href="/admin/users"><RadzenButton Text="Back to Users" ButtonStyle="ButtonStyle.Secondary" /></a>
         }
         else
         {
@@ -47,33 +47,33 @@
                 <DataAnnotationsValidator />
                 <ValidationSummary />
 
-                <div class="mb-3">
+                <div class="rz-mb-6">
                     <label class="form-label">Full Name</label>
                     <InputText class="form-control" @bind-Value="model.FullName" />
                 </div>
 
-                <div class="mb-3">
+                <div class="rz-mb-6">
                     <label class="form-label">Email</label>
                     <InputText type="email" class="form-control" @bind-Value="model.Email" />
                 </div>
 
-                <div class="mb-3">
+                <div class="rz-mb-6">
                     <label class="form-label">Phone</label>
                     <InputText class="form-control" @bind-Value="model.Phone" />
                 </div>
 
-                <div class="mb-3">
+                <div class="rz-mb-6">
                     <label class="form-label">Addresses</label>
                     @for (var i = 0; i < model.Addresses.Count; i++)
                     {
                         var index = i;
                         var addr = model.Addresses[index];
-                        <div class="card mb-2">
-                            <div class="card-body py-2 px-3">
-                                <div class="mb-2">
+                        <div class="card rz-mb-2">
+                            <div class="card-body rz-py-2 rz-px-4">
+                                <div class="rz-mb-2">
                                     <InputText class="form-control" placeholder="Street address" @bind-Value="addr.StreetAddress" />
                                 </div>
-                                <div class="row g-2 mb-2">
+                                <div class="row g-2 rz-mb-2">
                                     <div class="col">
                                         <InputText class="form-control" placeholder="City" @bind-Value="addr.City" />
                                     </div>
@@ -91,17 +91,17 @@
                                     </div>
                                     @if (model.Addresses.Count > 1)
                                     {
-                                        <button type="button" class="btn btn-sm btn-outline-danger" @onclick="() => model.Addresses.RemoveAt(index)">Remove</button>
+                                        <RadzenButton Text="Remove" ButtonStyle="ButtonStyle.Danger" Variant="Variant.Outlined" Size="ButtonSize.Small" Click="() => model.Addresses.RemoveAt(index)" />
                                     }
                                 </div>
                             </div>
                         </div>
                     }
-                    <button type="button" class="btn btn-sm btn-outline-secondary" @onclick="() => model.Addresses.Add(new())">Add Address</button>
+                    <RadzenButton Text="Add Address" ButtonStyle="ButtonStyle.Secondary" Variant="Variant.Outlined" Size="ButtonSize.Small" Click="() => model.Addresses.Add(new())" />
                 </div>
 
-                <button type="submit" class="btn btn-primary">@(string.IsNullOrWhiteSpace(model.Email) ? "Create (Directory Only)" : "Create & Send Invite")</button>
-                <a href="/admin/users" class="btn btn-secondary ms-2">Cancel</a>
+                <RadzenButton ButtonType="ButtonType.Submit" Text="@(string.IsNullOrWhiteSpace(model.Email) ? "Create (Directory Only)" : "Create & Send Invite")" ButtonStyle="ButtonStyle.Primary" />
+                <a href="/admin/users" class="rz-ms-2"><RadzenButton Text="Cancel" ButtonStyle="ButtonStyle.Secondary" /></a>
             </EditForm>
         }
     </div>

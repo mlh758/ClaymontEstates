@@ -25,7 +25,7 @@
             <p class="text-muted">Only HOA officers can view your emergency contacts.</p>
         }
 
-        <a href="@createUrl" class="btn btn-primary mb-3">Add Emergency Contact</a>
+        <a href="@createUrl" class="rz-mb-6"><RadzenButton Text="Add Emergency Contact" ButtonStyle="ButtonStyle.Primary" /></a>
 
         @if (contacts is null)
         {
@@ -33,7 +33,7 @@
         }
         else if (contacts.Count == 0)
         {
-            <p class="mb-0">No emergency contacts on file.</p>
+            <p class="rz-mb-0">No emergency contacts on file.</p>
         }
         else
         {
@@ -56,7 +56,7 @@
                             <RadzenTableCell>@contact.PhoneNumber</RadzenTableCell>
                             <RadzenTableCell>@contact.Email</RadzenTableCell>
                             <RadzenTableCell>
-                                <a href="/emergency-contacts/edit/@contact.Id" class="btn btn-sm btn-outline-secondary">Edit</a>
+                                <a href="/emergency-contacts/edit/@contact.Id"><RadzenButton Text="Edit" ButtonStyle="ButtonStyle.Secondary" Variant="Variant.Outlined" Size="ButtonSize.Small" /></a>
                             </RadzenTableCell>
                         </RadzenTableRow>
                     }
@@ -66,7 +66,7 @@
 
         @if (isAdminView)
         {
-            <a href="/admin/emergency-contacts" class="btn btn-secondary mt-3">Back to All Residents</a>
+            <a href="/admin/emergency-contacts" class="rz-mt-6"><RadzenButton Text="Back to All Residents" ButtonStyle="ButtonStyle.Secondary" /></a>
         }
     </div>
 </div>

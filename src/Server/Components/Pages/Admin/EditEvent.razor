@@ -20,7 +20,7 @@
 }
 else
 {
-    <div class="card mb-4">
+    <div class="card rz-mb-6">
         <div class="card-body">
             <RadzenText TextStyle="TextStyle.H1" TagName="TagName.H1" class="card-title">Edit Event</RadzenText>
 
@@ -33,12 +33,12 @@ else
                 <DataAnnotationsValidator />
                 <ValidationSummary />
 
-                <div class="mb-3">
+                <div class="rz-mb-6">
                     <label class="form-label" for="event-name">Name</label>
                     <InputText id="event-name" class="form-control" @bind-Value="model.Name" />
                 </div>
 
-                <div class="mb-3">
+                <div class="rz-mb-6">
                     <label class="form-label">Description</label>
                     <RadzenHtmlEditor @bind-Value="model.Description" style="height: 250px;">
                         <RadzenHtmlEditorUndo />
@@ -61,12 +61,12 @@ else
                     </RadzenHtmlEditor>
                 </div>
 
-                <div class="mb-3">
+                <div class="rz-mb-6">
                     <label class="form-label" for="event-location">Location</label>
                     <InputText id="event-location" class="form-control" @bind-Value="model.Location" />
                 </div>
 
-                <div class="row mb-3">
+                <div class="row rz-mb-6">
                     <div class="col-md-4">
                         <label class="form-label" for="event-date">Date</label>
                         <InputDate id="event-date" class="form-control" @bind-Value="model.Date" />
@@ -81,25 +81,25 @@ else
                     </div>
                 </div>
 
-                <div class="mb-3 form-check">
+                <div class="rz-mb-6 form-check">
                     <InputCheckbox id="event-public" class="form-check-input" @bind-Value="model.IsPublic" />
                     <label class="form-check-label" for="event-public">Public event (visible on home page)</label>
                 </div>
 
-                <div class="mb-3 form-check">
+                <div class="rz-mb-6 form-check">
                     <InputCheckbox id="event-rsvp" class="form-check-input" @bind-Value="model.RequiresRsvp" />
                     <label class="form-check-label" for="event-rsvp">Require RSVP</label>
                 </div>
 
-                <button type="submit" class="btn btn-primary">Save</button>
-                <a href="/admin/events" class="btn btn-secondary ms-2">Back</a>
+                <RadzenButton ButtonType="ButtonType.Submit" Text="Save" ButtonStyle="ButtonStyle.Primary" />
+                <a href="/admin/events" class="rz-ms-2"><RadzenButton Text="Back" ButtonStyle="ButtonStyle.Secondary" /></a>
             </EditForm>
         </div>
     </div>
 
     @if (evt.RequiresRsvp && evt.Rsvps.Count > 0)
     {
-        <div class="card mb-4">
+        <div class="card rz-mb-6">
             <div class="card-body">
                 <h5 class="card-title">RSVPs (@evt.Rsvps.Count)</h5>
                 <ul class="list-group">
@@ -114,7 +114,7 @@ else
 
     <div class="card">
         <div class="card-body">
-            <button class="btn btn-danger" @onclick="ConfirmDeleteAsync">Delete Event</button>
+            <RadzenButton Text="Delete Event" ButtonStyle="ButtonStyle.Danger" Click="ConfirmDeleteAsync" />
         </div>
     </div>
 }

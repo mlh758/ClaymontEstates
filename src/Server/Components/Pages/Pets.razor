@@ -15,7 +15,7 @@
         <RadzenText TextStyle="TextStyle.H1" TagName="TagName.H1" class="card-title">My Pets</RadzenText>
         <p class="text-muted">Pets added here will be searchable on the <a href="/found-pet">Found Pet</a> page. Other residents will be able to see the same contact information you share in the Directory so they can contact you to return your pet if they find it.</p>
 
-        <a href="/pets/create" class="btn btn-primary mb-3">Add Pet</a>
+        <a href="/pets/create" class="rz-mb-6"><RadzenButton Text="Add Pet" ButtonStyle="ButtonStyle.Primary" /></a>
 
         @if (pets is null)
         {
@@ -23,7 +23,7 @@
         }
         else if (pets.Count == 0)
         {
-            <p class="mb-0">No pets registered. Adding your pets helps neighbors return them if they get out!</p>
+            <p class="rz-mb-0">No pets registered. Adding your pets helps neighbors return them if they get out!</p>
         }
         else
         {
@@ -42,7 +42,7 @@
                             <RadzenTableCell>@pet.Name</RadzenTableCell>
                             <RadzenTableCell>@pet.Species</RadzenTableCell>
                             <RadzenTableCell>
-                                <a href="/pets/edit/@pet.Id" class="btn btn-sm btn-outline-secondary">Edit</a>
+                                <a href="/pets/edit/@pet.Id"><RadzenButton Text="Edit" ButtonStyle="ButtonStyle.Secondary" Variant="Variant.Outlined" Size="ButtonSize.Small" /></a>
                             </RadzenTableCell>
                         </RadzenTableRow>
                     }

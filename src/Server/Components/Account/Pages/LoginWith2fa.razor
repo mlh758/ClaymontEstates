@@ -22,19 +22,19 @@
             <input type="hidden" name="RememberMe" value="@RememberMe" />
             <DataAnnotationsValidator />
             <ValidationSummary class="text-danger" role="alert" />
-            <div class="mb-3">
+            <div class="rz-mb-6">
                 <label for="Input.TwoFactorCode" class="form-label">Authenticator code</label>
                 <InputText @bind-Value="Input.TwoFactorCode" id="Input.TwoFactorCode" class="form-control" autocomplete="off" />
                 <ValidationMessage For="() => Input.TwoFactorCode" class="text-danger" />
             </div>
-            <div class="checkbox mb-3">
+            <div class="checkbox rz-mb-6">
                 <label for="remember-machine" class="form-label">
                     <InputCheckbox @bind-Value="Input.RememberMachine" />
                     Remember this machine
                 </label>
             </div>
             <div>
-                <button type="submit" class="w-100 btn btn-lg btn-primary">Log in</button>
+                <RadzenButton ButtonType="ButtonType.Submit" Text="Log in" ButtonStyle="ButtonStyle.Primary" Size="ButtonSize.Large" Style="width:100%" />
             </div>
         </EditForm>
     </div>

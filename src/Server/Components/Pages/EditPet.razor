@@ -29,7 +29,7 @@ else if (pet is null)
 }
 else
 {
-    <div class="card mb-4">
+    <div class="card rz-mb-6">
         <div class="card-body">
             <RadzenText TextStyle="TextStyle.H1" TagName="TagName.H1" class="card-title">Edit Pet</RadzenText>
 
@@ -42,40 +42,40 @@ else
                 <DataAnnotationsValidator />
                 <ValidationSummary />
 
-                <div class="mb-3">
+                <div class="rz-mb-6">
                     <label class="form-label" for="pet-name">Name</label>
                     <InputText id="pet-name" class="form-control" @bind-Value="model.Name" />
                 </div>
 
-                <div class="mb-3">
+                <div class="rz-mb-6">
                     <label class="form-label" for="pet-species">Species</label>
                     <InputText id="pet-species" class="form-control" @bind-Value="model.Species" />
                 </div>
 
-                <div class="mb-3">
+                <div class="rz-mb-6">
                     <label class="form-label" for="pet-breed">Breed</label>
                     <InputText id="pet-breed" class="form-control" @bind-Value="model.Breed" />
                 </div>
 
-                <div class="mb-3">
+                <div class="rz-mb-6">
                     <label class="form-label" for="pet-weight">Weight (lbs)</label>
                     <InputNumber id="pet-weight" class="form-control" @bind-Value="model.Weight" />
                 </div>
 
-                <div class="mb-3">
+                <div class="rz-mb-6">
                     <label class="form-label" for="pet-description">Description</label>
                     <InputTextArea id="pet-description" class="form-control" rows="3" @bind-Value="model.Description" placeholder="Color, markings, distinguishing features..." />
                 </div>
 
-                <button type="submit" class="btn btn-primary">Save</button>
-                <a href="/pets" class="btn btn-secondary ms-2">Back</a>
+                <RadzenButton ButtonType="ButtonType.Submit" Text="Save" ButtonStyle="ButtonStyle.Primary" />
+                <a href="/pets" class="rz-ms-2"><RadzenButton Text="Back" ButtonStyle="ButtonStyle.Secondary" /></a>
             </EditForm>
         </div>
     </div>
 
     <div class="card">
         <div class="card-body">
-            <button class="btn btn-danger" @onclick="DeleteAsync">Delete Pet</button>
+            <RadzenButton Text="Delete Pet" ButtonStyle="ButtonStyle.Danger" Click="DeleteAsync" />
         </div>
     </div>
 }

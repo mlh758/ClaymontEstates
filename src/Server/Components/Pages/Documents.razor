@@ -16,7 +16,7 @@
 
         <AuthorizeView Policy="@Roles.OfficerPolicy">
             <Authorized>
-                <a href="/admin/documents/upload" class="btn btn-primary mb-3">Upload Document</a>
+                <a href="/admin/documents/upload" class="rz-mb-6"><RadzenButton Text="Upload Document" ButtonStyle="ButtonStyle.Primary" /></a>
             </Authorized>
         </AuthorizeView>
 
@@ -28,30 +28,30 @@
         }
         else if (documents.Count == 0)
         {
-            <p class="mb-0">No documents have been uploaded yet.</p>
+            <p class="rz-mb-0">No documents have been uploaded yet.</p>
         }
         else if (isMobile)
         {
             @foreach (var doc in documents)
             {
-                <RadzenCard class="mb-2">
+                <RadzenCard class="rz-mb-2">
                     <div class="d-flex justify-content-between align-items-start">
-                        <h5 class="mb-0 mt-0 text-lg">@doc.Name</h5>
+                        <h5 class="rz-mb-0 rz-mt-0 text-lg">@doc.Name</h5>
                         <div>
                             <AuthorizeView Policy="@Roles.OfficerPolicy">
                                 <Authorized>
-                                    <a href="/admin/documents/edit/@doc.Id" class="btn btn-sm btn-outline-secondary me-1">Edit</a>
+                                    <a href="/admin/documents/edit/@doc.Id" class="rz-me-1"><RadzenButton Text="Edit" ButtonStyle="ButtonStyle.Secondary" Variant="Variant.Outlined" Size="ButtonSize.Small" /></a>
                                 </Authorized>
                             </AuthorizeView>
-                            <a href="/api/documents/@doc.Id/download" class="btn btn-sm btn-outline-primary">Download</a>
+                            <a href="/api/documents/@doc.Id/download"><RadzenButton Text="Download" ButtonStyle="ButtonStyle.Primary" Variant="Variant.Outlined" Size="ButtonSize.Small" /></a>
                         </div>
                     </div>
                     @if (!string.IsNullOrEmpty(doc.Description))
                     {
-                        <p class="mb-1 text-muted">@doc.Description</p>
+                        <p class="rz-mb-1 text-muted">@doc.Description</p>
                     }
-                    <p class="mb-1"><strong>Effective:</strong> @doc.EffectiveDate.ToString("yyyy-MM-dd")</p>
-                    <p class="mb-0 text-muted"><small>Uploaded by @doc.UploadedByEmail</small></p>
+                    <p class="rz-mb-1"><strong>Effective:</strong> @doc.EffectiveDate.ToString("yyyy-MM-dd")</p>
+                    <p class="rz-mb-0 text-muted"><small>Uploaded by @doc.UploadedByEmail</small></p>
                 </RadzenCard>
             }
         }
@@ -78,10 +78,10 @@
                             <RadzenTableCell>
                                 <AuthorizeView Policy="@Roles.OfficerPolicy">
                                     <Authorized>
-                                        <a href="/admin/documents/edit/@doc.Id" class="btn btn-sm btn-outline-secondary me-1">Edit</a>
+                                        <a href="/admin/documents/edit/@doc.Id" class="rz-me-1"><RadzenButton Text="Edit" ButtonStyle="ButtonStyle.Secondary" Variant="Variant.Outlined" Size="ButtonSize.Small" /></a>
                                     </Authorized>
                                 </AuthorizeView>
-                                <a href="/api/documents/@doc.Id/download" class="btn btn-sm btn-outline-primary">Download</a>
+                                <a href="/api/documents/@doc.Id/download"><RadzenButton Text="Download" ButtonStyle="ButtonStyle.Primary" Variant="Variant.Outlined" Size="ButtonSize.Small" /></a>
                             </RadzenTableCell>
                         </RadzenTableRow>
                     }

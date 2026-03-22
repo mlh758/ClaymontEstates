@@ -24,7 +24,7 @@
 
         @if (uploaded)
         {
-            <a href="/documents" class="btn btn-secondary">Back to Documents</a>
+            <a href="/documents"><RadzenButton Text="Back to Documents" ButtonStyle="ButtonStyle.Secondary" /></a>
         }
         else
         {
@@ -32,22 +32,22 @@
                 <DataAnnotationsValidator />
                 <ValidationSummary />
 
-                <div class="mb-3">
+                <div class="rz-mb-6">
                     <label class="form-label">Name</label>
                     <InputText class="form-control" @bind-Value="model.Name" />
                 </div>
 
-                <div class="mb-3">
+                <div class="rz-mb-6">
                     <label class="form-label">Description (optional)</label>
                     <InputTextArea class="form-control" @bind-Value="model.Description" />
                 </div>
 
-                <div class="mb-3">
+                <div class="rz-mb-6">
                     <label class="form-label">Effective Date</label>
                     <InputDate class="form-control" @bind-Value="model.EffectiveDate" />
                 </div>
 
-                <div class="mb-3">
+                <div class="rz-mb-6">
                     <label class="form-label">File (max 50 MB)</label>
                     <InputFile OnChange="OnFileSelected" class="form-control" />
                 </div>
@@ -57,10 +57,8 @@
                     <p class="text-muted">Selected: @selectedFile.Name (@FormatSize(selectedFile.Size))</p>
                 }
 
-                <button type="submit" class="btn btn-primary" disabled="@(selectedFile is null || uploading)">
-                    @(uploading ? "Uploading..." : "Upload")
-                </button>
-                <a href="/documents" class="btn btn-secondary ms-2">Cancel</a>
+                <RadzenButton ButtonType="ButtonType.Submit" Text="Upload" BusyText="Uploading..." IsBusy="uploading" ButtonStyle="ButtonStyle.Primary" Disabled="@(selectedFile is null)" />
+                <a href="/documents" class="rz-ms-2"><RadzenButton Text="Cancel" ButtonStyle="ButtonStyle.Secondary" /></a>
             </EditForm>
         }
     </div>

@@ -17,10 +17,10 @@
 }
 else
 {
-    <div class="card mb-4">
+    <div class="card rz-mb-6">
         <div class="card-body">
             <RadzenText TextStyle="TextStyle.H1" TagName="TagName.H1" class="card-title">Attendees — @evt.Name</RadzenText>
-            <p class="text-muted mb-0">@evt.Date.ToLocalTime().ToString("MMM d, yyyy h:mm tt")</p>
+            <p class="text-muted rz-mb-0">@evt.Date.ToLocalTime().ToString("MMM d, yyyy h:mm tt")</p>
         </div>
     </div>
 
@@ -37,9 +37,9 @@ else
                   AvailableEmptyText="Everyone is attending!"
                   SelectedEmptyText="No attendees yet." />
 
-    <div class="mt-3">
-        <a href="/admin/events/edit/@EventId" class="btn btn-secondary">Edit Event</a>
-        <a href="/admin/events" class="btn btn-secondary ms-2">Manage Events</a>
+    <div class="rz-mt-6">
+        <a href="/admin/events/edit/@EventId"><RadzenButton Text="Edit Event" ButtonStyle="ButtonStyle.Secondary" /></a>
+        <a href="/admin/events" class="rz-ms-2"><RadzenButton Text="Manage Events" ButtonStyle="ButtonStyle.Secondary" /></a>
     </div>
 }
 
