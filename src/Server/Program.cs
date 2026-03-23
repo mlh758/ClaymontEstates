@@ -8,7 +8,6 @@ using Server.Components.Account;
 using Server.Data;
 using Polly;
 using Radzen;
-using Microsoft.AspNetCore.HttpOverrides;
 using Server.Services;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -28,7 +27,26 @@ builder.Services.AddAuthentication(options =>
         options.DefaultScheme = IdentityConstants.ApplicationScheme;
         options.DefaultSignInScheme = IdentityConstants.ExternalScheme;
     })
-    .AddIdentityCookies();
+    .AddIdentityCookies(options =>
+    {
+        options.ApplicationCookie?.Configure(cookie =>
+        {
+            cookie.Events.OnRedirectToLogin = context =>
+            {
+                var uri = new UriBuilder(context.RedirectUri) { Scheme = "https", Port = -1 };
+                context.Response.Headers.Location = uri.Uri.AbsoluteUri;
+                context.Response.StatusCode = 302;
+                return Task.CompletedTask;
+            };
+            cookie.Events.OnRedirectToAccessDenied = context =>
+            {
+                var uri = new UriBuilder(context.RedirectUri) { Scheme = "https", Port = -1 };
+                context.Response.Headers.Location = uri.Uri.AbsoluteUri;
+                context.Response.StatusCode = 403;
+                return Task.CompletedTask;
+            };
+        });
+    });
 
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
@@ -113,11 +131,6 @@ builder.Services.AddRateLimiter(options =>
 });
 
 var app = builder.Build();
-
-app.UseForwardedHeaders(new ForwardedHeadersOptions
-{
-    ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto
-});
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())

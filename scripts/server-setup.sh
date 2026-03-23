@@ -74,7 +74,11 @@ fi
 
 cat > /etc/caddy/Caddyfile <<EOF
 ${DOMAIN} {
-    reverse_proxy localhost:5000
+    reverse_proxy localhost:5000 {
+        header_up X-Real-IP {remote}
+        header_up X-Forwarded-For {remote}
+        header_up X-Forwarded-Proto {scheme}
+    }
 }
 EOF
 
