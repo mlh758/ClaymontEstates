@@ -35,6 +35,7 @@ public class BulkEmailBackgroundService(
         using var scope = scopeFactory.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
         var emailFactory = scope.ServiceProvider.GetRequiredService<IFluentEmailFactory>();
+        var bulkEmailService = scope.ServiceProvider.GetRequiredService<BulkEmailService>();
 
         var retryCutoff = DateTime.UtcNow.AddMinutes(-30);
 
@@ -42,6 +43,7 @@ public class BulkEmailBackgroundService(
         // Exclude recipients that already sent, or failed within the last 30 minutes
         var pendingEmails = await db.BulkEmails
             .Include(b => b.Sender)
+            .Include(b => b.Attachments)
             .Include(b => b.Recipients
                 .Where(r => r.SentAt == null && (r.FailedAt == null || r.FailedAt < retryCutoff)))
                 .ThenInclude(r => r.User)
@@ -77,10 +79,42 @@ public class BulkEmailBackgroundService(
                             email.ReplyTo(bulkEmail.Sender.Email);
                         }
 
-                        var response = await email.SendAsync(token);
-                        if (!response.Successful)
-                            throw new InvalidOperationException(
-                                $"Email send failed: {string.Join(", ", response.ErrorMessages)}");
+                        // Stream each attachment from disk; dispose the handles once the
+                        // message has been sent (or this attempt has failed).
+                        var attachmentStreams = new List<Stream>();
+                        try
+                        {
+                            foreach (var attachment in bulkEmail.Attachments)
+                            {
+                                var path = bulkEmailService.GetPhysicalPath(attachment);
+                                if (!File.Exists(path))
+                                {
+                                    logger.LogWarning(
+                                        "Attachment file missing for bulk email {BulkEmailId}: {Path}",
+                                        bulkEmail.Id, path);
+                                    continue;
+                                }
+
+                                var fileStream = File.OpenRead(path);
+                                attachmentStreams.Add(fileStream);
+                                email.Attach(new FluentEmail.Core.Models.Attachment
+                                {
+                                    Data = fileStream,
+                                    Filename = attachment.FileName,
+                                    ContentType = attachment.ContentType
+                                });
+                            }
+
+                            var response = await email.SendAsync(token);
+                            if (!response.Successful)
+                                throw new InvalidOperationException(
+                                    $"Email send failed: {string.Join(", ", response.ErrorMessages)}");
+                        }
+                        finally
+                        {
+                            foreach (var stream in attachmentStreams)
+                                await stream.DisposeAsync();
+                        }
                     }, ct);
 
                     recipient.SentAt = DateTime.UtcNow;
@@ -102,12 +136,17 @@ public class BulkEmailBackgroundService(
 
             if (allDone)
             {
+                // Delivery is finished — purge the attachment files now to reclaim disk.
+                // The attachment metadata rows are kept so the email's history still shows
+                // how many files were attached and their sizes.
+                bulkEmailService.DeleteAttachmentFiles(bulkEmail.Attachments);
                 bulkEmail.CompletedAt = DateTime.UtcNow;
                 await db.SaveChangesAsync(ct);
             }
         }
 
-        // Clean up completed bulk emails older than a week
+        // Clean up completed bulk emails older than a week. Their attachment files were
+        // already purged when delivery completed; the cascade delete removes the metadata rows.
         var cutoff = DateTime.UtcNow.AddDays(-7);
         var staleEmails = await db.BulkEmails
             .Where(b => b.CompletedAt != null && b.CompletedAt < cutoff)

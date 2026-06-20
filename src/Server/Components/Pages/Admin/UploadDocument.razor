@@ -54,7 +54,7 @@
 
                 @if (selectedFile is not null)
                 {
-                    <p class="text-muted">Selected: @selectedFile.Name (@FormatSize(selectedFile.Size))</p>
+                    <p class="text-muted">Selected: @selectedFile.Name (@selectedFile.Size.ToFileSize())</p>
                 }
 
                 <RadzenButton ButtonType="ButtonType.Submit" Text="Upload" BusyText="Uploading..." IsBusy="uploading" ButtonStyle="ButtonStyle.Primary" Disabled="@(selectedFile is null)" />
@@ -116,13 +116,6 @@
         }
 
         uploading = false;
-    }
-
-    private static string FormatSize(long bytes)
-    {
-        if (bytes < 1024) return $"{bytes} B";
-        if (bytes < 1024 * 1024) return $"{bytes / 1024.0:F1} KB";
-        return $"{bytes / (1024.0 * 1024.0):F1} MB";
     }
 
     private sealed class UploadModel

@@ -25,6 +25,32 @@ public class BulkEmail
     public DateTime? CompletedAt { get; set; }
 
     public ICollection<EmailRecipient> Recipients { get; set; } = [];
+
+    public ICollection<BulkEmailAttachment> Attachments { get; set; } = [];
+}
+
+public class BulkEmailAttachment
+{
+    public int Id { get; set; }
+
+    public int BulkEmailId { get; set; }
+    public BulkEmail BulkEmail { get; set; } = null!;
+
+    /// <summary>Original file name shown to the user and used as the email attachment name.</summary>
+    [Required]
+    [MaxLength(200)]
+    public string FileName { get; set; } = string.Empty;
+
+    /// <summary>Randomized name of the file as stored on disk.</summary>
+    [Required]
+    [MaxLength(500)]
+    public string StoredFileName { get; set; } = string.Empty;
+
+    [Required]
+    [MaxLength(100)]
+    public string ContentType { get; set; } = string.Empty;
+
+    public long FileSizeBytes { get; set; }
 }
 
 public class EmailRecipient

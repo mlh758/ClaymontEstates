@@ -27,6 +27,17 @@
                 @((MarkupString)Sanitizer.Sanitize(bulkEmail.Body))
             </div>
 
+            @if (bulkEmail.Attachments.Count > 0)
+            {
+                <h5>@bulkEmail.Attachments.Count Attachment@(bulkEmail.Attachments.Count == 1 ? "" : "s")</h5>
+                <ul class="rz-mb-6">
+                    @foreach (var attachment in bulkEmail.Attachments)
+                    {
+                        <li>@attachment.FileName <span class="text-muted">(@attachment.FileSizeBytes.ToFileSize())</span></li>
+                    }
+                </ul>
+            }
+
             <h5>Recipients</h5>
             <RadzenTable>
                 <RadzenTableHeader>

@@ -11,6 +11,7 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
 {
     public DbSet<AuditEvent> AuditEvents => Set<AuditEvent>();
     public DbSet<BulkEmail> BulkEmails => Set<BulkEmail>();
+    public DbSet<BulkEmailAttachment> BulkEmailAttachments => Set<BulkEmailAttachment>();
     public DbSet<Document> Documents => Set<Document>();
     public DbSet<EmailRecipient> EmailRecipients => Set<EmailRecipient>();
     public DbSet<Event> Events => Set<Event>();
@@ -45,6 +46,14 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
             entity.HasOne(b => b.Sender)
                 .WithMany()
                 .HasForeignKey(b => b.SenderId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        builder.Entity<BulkEmailAttachment>(entity =>
+        {
+            entity.HasOne(a => a.BulkEmail)
+                .WithMany(b => b.Attachments)
+                .HasForeignKey(a => a.BulkEmailId)
                 .OnDelete(DeleteBehavior.Cascade);
         });
 

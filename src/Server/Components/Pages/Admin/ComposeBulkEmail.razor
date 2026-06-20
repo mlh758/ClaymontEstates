@@ -19,6 +19,11 @@
         <RadzenText TextStyle="TextStyle.H1" TagName="TagName.H1" class="card-title">Compose Bulk Email</RadzenText>
         <p class="text-muted">This email will be sent to all residents who have opted into email notifications.</p>
 
+        @if (!string.IsNullOrEmpty(message))
+        {
+            <RadzenAlert AlertStyle="@(isError ? AlertStyle.Danger : AlertStyle.Success)" AllowClose="false" ShowIcon="false">@message</RadzenAlert>
+        }
+
         <EditForm Model="model" OnValidSubmit="SendAsync">
             <DataAnnotationsValidator />
             <ValidationSummary />
@@ -51,7 +56,25 @@
                 </RadzenHtmlEditor>
             </div>
 
-            <RadzenButton ButtonType="ButtonType.Submit" Text="Send Email" ButtonStyle="ButtonStyle.Primary" />
+            <div class="rz-mb-6">
+                <label class="form-label">Attachments (optional, max @(BulkEmailService.MaxTotalAttachmentBytes / 1024 / 1024) MB total)</label>
+                <InputFile OnChange="OnFilesSelected" multiple class="form-control" />
+
+                @if (selectedFiles.Count > 0)
+                {
+                    <ul class="text-muted rz-mt-2 rz-mb-0">
+                        @foreach (var file in selectedFiles)
+                        {
+                            <li>@file.Name (@file.Size.ToFileSize())</li>
+                        }
+                    </ul>
+                    <p class="@(TotalSize > BulkEmailService.MaxTotalAttachmentBytes ? "text-danger" : "text-muted") rz-mt-1">
+                        Total: @TotalSize.ToFileSize()
+                    </p>
+                }
+            </div>
+
+            <RadzenButton ButtonType="ButtonType.Submit" Text="Send Email" BusyText="Sending..." IsBusy="sending" ButtonStyle="ButtonStyle.Primary" />
             <a href="/admin/emails" class="rz-ms-2"><RadzenButton Text="Cancel" ButtonStyle="ButtonStyle.Secondary" /></a>
         </EditForm>
     </div>
@@ -59,22 +82,71 @@
 
 @code {
     private EmailModel model = new();
+    private List<IBrowserFile> selectedFiles = new();
+    private string? message;
+    private bool isError;
+    private bool sending;
+
+    private long TotalSize => selectedFiles.Sum(f => f.Size);
+
+    private void OnFilesSelected(InputFileChangeEventArgs e)
+    {
+        selectedFiles = e.GetMultipleFiles(maximumFileCount: 20).ToList();
+        message = null;
+    }
 
     private async Task SendAsync()
     {
+        if (TotalSize > BulkEmailService.MaxTotalAttachmentBytes)
+        {
+            message = $"Attachments exceed the maximum total size of {BulkEmailService.MaxTotalAttachmentBytes / 1024 / 1024} MB.";
+            isError = true;
+            return;
+        }
+
+        sending = true;
+        message = null;
+
         var authState = await AuthStateProvider.GetAuthenticationStateAsync();
         var userId = authState.User.FindFirstValue(ClaimTypes.NameIdentifier)!;
         var actorEmail = authState.User.FindFirstValue(ClaimTypes.Email) ?? "unknown";
 
-        var bulkEmail = await BulkEmailService.CreateAsync(model.Subject, model.Body ?? "", userId);
-
-        await AuditService.LogAsync(AuditAction.SendBulkEmail, actorEmail, null, new Dictionary<string, string>
+        var streams = new List<Stream>();
+        try
         {
-            ["Subject"] = bulkEmail.Subject,
-            ["RecipientCount"] = bulkEmail.Recipients.Count.ToString()
-        });
+            var inputs = new List<BulkEmailAttachmentInput>();
+            foreach (var file in selectedFiles)
+            {
+                var stream = file.OpenReadStream(maxAllowedSize: BulkEmailService.MaxTotalAttachmentBytes);
+                streams.Add(stream);
+                inputs.Add(new BulkEmailAttachmentInput(stream, file.Name, file.ContentType, file.Size));
+            }
 
-        Nav.NavigateTo("/admin/emails");
+            var (success, error, bulkEmail) = await BulkEmailService.CreateAsync(
+                model.Subject, model.Body ?? "", userId, inputs);
+
+            if (!success || bulkEmail is null)
+            {
+                message = error ?? "Failed to create the email.";
+                isError = true;
+                sending = false;
+                return;
+            }
+
+            await AuditService.LogAsync(AuditAction.SendBulkEmail, actorEmail, null, new Dictionary<string, string>
+            {
+                ["Subject"] = bulkEmail.Subject,
+                ["RecipientCount"] = bulkEmail.Recipients.Count.ToString(),
+                ["AttachmentCount"] = bulkEmail.Attachments.Count.ToString()
+            });
+
+            Nav.NavigateTo("/admin/emails");
+        }
+        finally
+        {
+            foreach (var stream in streams)
+                await stream.DisposeAsync();
+        }
     }
 
     private sealed class EmailModel
