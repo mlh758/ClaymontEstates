@@ -15,6 +15,20 @@
     <div class="card-body">
         <RadzenText TextStyle="TextStyle.H1" TagName="TagName.H1" class="card-title">Resident Directory</RadzenText>
 
+        @if (isOfficerOrAbove)
+        {
+            <div class="rz-mb-4 d-flex flex-wrap align-items-center" style="gap: calc(var(--spacing) * 2)">
+                <RadzenDropDown @bind-Value="envelopeSize" Data="EnvelopeService.Sizes"
+                                TextProperty="Label" ValueProperty="Key" Style="min-width: 14rem;" />
+                <a href="@($"/api/directory/envelopes/outgoing?size={envelopeSize}")" target="_blank" rel="noopener">
+                    <RadzenButton Text="Mailing Envelopes" Icon="mail" ButtonStyle="ButtonStyle.Secondary" />
+                </a>
+                <a href="@($"/api/directory/envelopes/return?size={envelopeSize}")" target="_blank" rel="noopener">
+                    <RadzenButton Text="Return Envelopes" Icon="undo" ButtonStyle="ButtonStyle.Secondary" />
+                </a>
+            </div>
+        }
+
         <div class="rz-mb-6">
             <input type="text" class="form-control" placeholder="Search by name or address..."
                    @bind="searchQuery" @bind:event="oninput" @bind:after="OnSearchInput" />
@@ -103,6 +117,7 @@
     private List<(ApplicationUser User, string? DisplayRoles)>? residents;
     private string? searchQuery;
     private bool isOfficerOrAbove;
+    private string envelopeSize = EnvelopeService.Number10.Key;
     private bool isMobile;
     private Timer? debounceTimer;
 

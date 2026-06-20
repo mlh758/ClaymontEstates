@@ -69,6 +69,7 @@ builder.Services.AddIdentityCore<ApplicationUser>(options =>
     .AddDefaultTokenProviders();
 
 builder.Services.AddScoped<UserService>();
+builder.Services.AddScoped<EnvelopeService>();
 builder.Services.AddScoped<DocumentService>();
 builder.Services.AddScoped<EventService>();
 builder.Services.AddScoped<AuditService>();
@@ -169,6 +170,22 @@ app.MapGet("/api/documents/{id:int}/download", async (int id, DocumentService do
 
     return Results.File(path, document.ContentType, document.FileName);
 }).RequireAuthorization();
+
+app.MapGet("/api/directory/envelopes/{mode}", async (string mode, string? size, HttpContext http, EnvelopeService envelopes, UserManager<ApplicationUser> userManager) =>
+{
+    if (mode is not ("outgoing" or "return"))
+        return Results.NotFound();
+
+    var userId = userManager.GetUserId(http.User);
+    if (userId is null)
+        return Results.Unauthorized();
+
+    var returnMailer = mode == "return";
+    var envelopeSize = EnvelopeService.ResolveSize(size);
+    var pdf = await envelopes.GenerateAsync(userId, returnMailer, envelopeSize);
+    var fileName = returnMailer ? "return-envelopes.pdf" : "mailing-envelopes.pdf";
+    return Results.File(pdf, "application/pdf", fileName);
+}).RequireAuthorization(Roles.OfficerPolicy);
 
 // Apply migrations and seed roles on startup
 using (var scope = app.Services.CreateScope())
